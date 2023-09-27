@@ -1,0 +1,680 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage{tabularray}
+\usepackage{tikz}             
+\usepackage{xeCJK}
+\usepackage{amsthm}  
+\usepackage[fontset=macnew]{ctex}
+\usepackage{sgame}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{sectsty}
+\usepackage{color}
+\geometry{left=2.cm,right=2.cm,top=3.18cm,bottom=3.18cm}
+\usepackage{pgfplots} % package used to implement the plot
+\usepackage{pgf-pie}
+\usepackage{exscale}
+\usepackage{relsize}
+\pgfplotsset{width=6.5cm, compat=1.6}
+\usepackage{indentfirst}
+\usepackage{float}
+\usetikzlibrary{shapes,arrows}
+\sectionfont{\color{blue}\selectfont}
+\subsectionfont{\color{blue}\selectfont}
+\subsubsectionfont{\color{blue}\selectfont}
+\usepackage{hyperref}
+\usepackage{marvosym}
+\usepackage{color}
+\usepackage{minted}
+\usemintedstyle{xcode}
+\usepackage{memorygraphs}
+\usetikzlibrary{calc,shapes.multipart,chains,arrows.meta}
+\usepackage{caption}
+\usepackage{makecell}
+\newtheorem{definition}{定义}
+\newtheorem{theorem}{\textcolor{red}{定理}}
+\newtheorem*{solution}{\kaishu 解}
+\usepackage[skins]{tcolorbox} %必须标注skin，才能使用shadow命令显示阴影。
+\tcbuselibrary{breakable} %breakable：支持跨页
+\usepackage{fancyhdr} % 导入fancyhdr包
+\pagestyle{fancy}
+% 页眉设置
+\fancyhead[L]{\textbf{龚舒凯\ 2022202790}}
+
+\begin{document}
+	\title{{\Huge 数据结构与算法I实验报告{\large\linebreak\\}}{\huge 实验1：栈和队列的应用\linebreak\linebreak}}
+	\vspace{3cm}
+	%\author{\Large 龚舒凯\ 2022202790\ 应用经济-数据科学实验班}
+	\author{\\ \Large 龚舒凯\ 2022202790\ 应用经济-数据科学实验班\\
+		\hfill\\
+		\Large{\url{https://github.com/GONGSHUKAI}}\\
+		\hfill}
+	
+	\date{\today}
+	\maketitle
+	\newpage
+	\section{算术表达式求值演示}
+	\subsection{需求分析}
+	\noindent \textbf{问题描述：}表达式计算式实现程序设计语言的基本问题之一，也是栈的应用的一个典型例子。设计一个程序，演示用算符优先法对算术表达式求值的过程。\\
+	
+	\noindent \textbf{基本要求：}以字符序列的形式从终端输入语法正确、不含变量的整数表达式。利用课件给出的算符优先关系，实现对算术四则混合运算表达式的求值，并演示在求值过程中操作符栈、操作数栈、输入字符和主要操作的变化过程。\\
+	
+	\noindent \textbf{输入形式：}一个以“$=$“结尾的中缀算术表达式。运算符包括$+$，$-$，$*$，$/$，$($，$)$，$=$，$\^$，参加运算的数为正整数。例如，\mintinline{C}|3*(7-2)| 或者\mintinline{C}|1024/(20+8)|或者 \mintinline{C}|(20+2)*(6*(2+8))| 或者\mintinline{C}|((2+4)*(5+7)*9+1)/2|等等。\\
+	
+	\noindent \textbf{输出形式：}表达式的计算结果。运算过程中操作符栈、操作数栈、输入字符和主要操作的内容。
+	\subsection{概要设计}
+	\noindent 中缀表达式的求值需要用到两个栈：操作符栈\mintinline{C}|OPTR|，操作数栈\mintinline{C}|OPND|。操作数栈存放的数据为\mintinline{C}|double|类型，而操作符栈存放的数据为\mintinline{C}|char|类型。
+	\subsubsection{抽象数据类型} 
+	\noindent 在本程序中，用到的\textbf{抽象数据类型}定义如下所示：\\
+	
+	\noindent ADT \mintinline{C}|char_stack|$\{$
+	
+	数据对象：$D=\{c | c\in \mintinline{C}|char|\}$
+	
+	数据关系：$R=\{ \left\langle e_1,e_2\right\rangle | e_1\text{是一个}\mintinline{C}|char[]|\text{类型的数组，}e_2\text{是一个指向栈顶的指针}\}$
+	
+	基本操作：
+	
+	\qquad \mintinline{C}|InitCharStack()| 操作结果：创建一个字符串类型的栈
+	
+	\qquad \mintinline{C}|CharStackPush(s, value)| 操作结果：入栈字符s
+	
+	\qquad \mintinline{C}|CharStackPop(s)| 操作结果：将栈顶元素弹出
+	
+	\qquad \mintinline{C}|CharStackPrint(s)| 操作结果：打印当前栈中所有元素
+	
+	\noindent $\}$
+	
+	\noindent ADT \mintinline{C}|stack|$\{$
+	
+	数据对象：$D=\{c | c\in \mintinline{C}|double|\}$
+	
+	数据关系：$R=\{ \left\langle e_1,e_2\right\rangle | e_1\text{是一个}\mintinline{C}|double[]|\text{类型的数组，}e_2\text{是一个指向栈顶的指针}\}$
+	
+	基本操作：
+	
+	\qquad \mintinline{C}|InitStack()| 操作结果：创建一个字符串类型的栈
+	
+	\qquad \mintinline{C}|StackPush(s, value)| 操作结果：入栈字符s
+	
+	\qquad \mintinline{C}|StackPop(s)| 操作结果：将栈顶元素弹出
+	
+	\qquad \mintinline{C}|StackPrint(s)| 操作结果：打印当前栈中所有元素
+	
+	\noindent $\}$
+	\subsubsection{主程序流程}
+	\noindent
+	\begin{enumerate}
+		\item  首先创建操作符栈\mintinline{C}|OPTR|和操作数栈\mintinline{C}|OPND|
+		\item 使用\mintinline{C}|gets()|函数获取终端输入的字符串
+		\item 调用自创建函数\mintinline{C}|InfixCalculation(str[], OPND, OPTR)|计算中缀表达式
+	\end{enumerate}
+	\subsection{详细设计}
+	\noindent 两种栈的基本操作在附录中有详细代码实现。这里主要论述中缀表达式计算程序中\textbf{三个核心函数的详细设计}。
+	\subsubsection{中缀表达式计算函数}
+	\noindent 中缀表达式计算函数的定义如下：
+	\begin{center}
+		\mintinline{C}|void InfixCalculation(char InfixExpression[], stack *OPND, char_stack *OPTR);|
+	\end{center}
+	其中\mintinline{C}|char InfixExpression[]|是终端输入的中缀表达式；\mintinline{C}|stack *OPND|是操作数栈；\mintinline{C}|stack *OPTR|是操作符栈。算法思想如下：
+	\begin{enumerate}
+		\item 建立并初始化\mintinline{C}|OPTR|栈和\mintinline{C}|OPND|栈，然后在\mintinline{C}|OPTR|栈中压入一个\mintinline{C}|=|
+		\item 扫描中缀表达式，取一字符送入\mintinline{C}|c|
+		\item 当\mintinline{C}|c ==‘=’且OPTR栈的栈顶 =‘=’|时才停止循环，在\mintinline{C}|OPTR|栈的栈顶得到运算结果，否则执行以下操作：
+		\begin{enumerate}
+			\item 若\mintinline{C}|c|是操作数，进\mintinline{C}|OPND|栈，从中缀表达取读下一字符送入\mintinline{C}|c|
+			\item 若\mintinline{C}|c|是操作符，比较\mintinline{C}|icp(ch)|的优先级（栈外优先数）和\mintinline{C}|isp(OPTR)|的优先级（栈内优先数）：
+			\begin{enumerate}
+				\item 若\mintinline{C}|icp(ch) > isp(OPTR)|，则\mintinline{C}|c|进\mintinline{C}|OPTR|栈，从中缀表达式取下一字符送入\mintinline{C}|c|
+				\item 若\mintinline{C}|icp(ch) < isp(OPTR)|，则从\mintinline{C}|OPND|栈退出两个元素\mintinline{C}|a2|和\mintinline{C}|a1|，从\mintinline{C}|OPTR|栈退出\mintinline{C}|X|，形成运算指令\mintinline{C}|(a1)X(a2)|，结果进\mintinline{C}|OPND|栈；
+				\item 若\mintinline{C}|icp(c) = isp(OPTR)| 且\mintinline{C}|c == ')'|，则从\mintinline{C}|OPTR|栈退出\mintinline{C}|c == '('|，对消括号，然后从中缀表达式取下一字符送入\mintinline{C}|c|
+			\end{enumerate}
+			\textbf{其中，算数操作符的优先级表如下表所示}
+			\begin{center}
+				\begin{table}[H]
+					\centering
+					\begin{tabular}{c|cc}
+						\hline
+						操作符\mintinline{C}|c|&栈内优先数isp&栈外优先数icp\\
+						\hline
+						$\#$ & 0 & 0\\
+						( & 1 & 6\\
+						*,/,\% & 5 & 4\\
+						+,- & 3 & 2\\
+						) & 6 & 1\\
+						\hline
+					\end{tabular}
+					\caption{算数操作符优先级表}
+					\label{优先级}
+				\end{table}
+			\end{center}
+		\end{enumerate}
+	\end{enumerate}
+	代码如下所示：
+	\begin{minted}[mathescape,linenos,numbersep=5pt,gobble=2,frame=lines,framesep=2mm]{C++}
+		void InfixCalculation(char InfixExpression[], stack *OPND, char_stack *OPTR){
+			CharStackPush(OPTR, '=');//先往OPTR栈中压入一个#
+			while(1){//扫描中缀表达式的各个字符
+				if (IsOperand(InfixExpression[i]) == TRUE){//如果扫描到操作数
+					double num = Digitizer(InfixExpression);//Digitizer是将字符转换为数字的函数
+					StackPush(OPND, num);//将该操作数入栈
+					std::cout << "当前操作符栈为：";
+					CharStackPrint(OPTR);
+					std::cout << "当前操作数栈为：";
+					StackPrint(OPND);
+					std::cout << std::endl;
+				}
+				else if (IsOperator(InfixExpression[i]) == TRUE){//如果扫描到操作符
+					JudgePriority(InfixExpression[i],OPND,OPTR);
+					//JudgePriority是用于判断当前操作符和栈顶操作符优先级的函数
+				}
+				if (OPTR->data[OPTR->top] == '=' && InfixExpression[i] == '=') break;//终止循环的条件
+				i++;//移动到下一个字符的位置
+			}
+			std::cout << OPND->data[OPND->top];//栈顶元素即为中缀表达式的计算值
+		}
+	\end{minted}
+	\subsubsection{字符-数字转换函数}
+	\noindent 字符-数字转换函数的定义如下
+	\begin{center}
+		\mintinline{C}|int Digitizer(char str[]);|
+	\end{center}
+	其中\mintinline{C}|str[]|表示输入的中缀表达式。函数的功能是将扫描的操作数（\mintinline{C}|char|形式）转换为数字（\mintinline{C}|double|形式）。由于\textbf{限定了参加运算的数为正整数，因此考虑下述两种情况：}
+	\begin{enumerate}
+		\item 运算数为正的一位数，如0,1,...。在中缀表达式中，这样的运算数后必然是运算符
+		\item 运算数为正的多位数，如1024。
+	\end{enumerate}
+	我们可以这样区分一位数与多位数：首先设置标记变量\mintinline{C}|sign = 0|。当扫描到中缀表达式的某个单字符\mintinline{C}|str[i]|时，我们将其转化为数字\mintinline{C}|x|，并置标记\mintinline{C}|sign = 1|。在扫描下一个单字符时，如果仍然扫到数字，则表明运算数为多位数，通过
+	\begin{center}
+		\mintinline{C}|x = x * 10 + (double)str[i+1]|
+	\end{center}
+	实现位数的拼接；如果扫到操作符，则表明运算数为单位数，\mintinline{C}|Digitizer(str)|函数直接返回\mintinline{C}|x|值。\\
+	
+	\noindent 代码如下所示：
+	\begin{minted}[mathescape,linenos,numbersep=5pt,gobble=2,frame=lines,framesep=2mm]{C++}
+		int Digitizer(char str[]){
+			double x = 0;//要返回的数字
+			int sign = 0;//标识变量，用于将字符串转换为十位数、百位数
+			while (IsOperand(str[i]) == TRUE){
+				if (sign != 1){
+					x = char_to_double(str[i]);
+					sign = 1;
+					//把这个字符转换为数字后，置sign = 1
+					//如果这是一位数，则str[i+1]必然不是数字
+					//如果这是多位数，则str[i+1]仍然是数，由下面的语句将各个位数拼接成多位数
+				}
+				else{
+					x = x * 10 + char_to_double(str[i]);
+				}
+				i++;
+			}
+			i--;
+			return x;
+		}
+	\end{minted}
+	\subsubsection{优先级判断函数}
+	\noindent 优先级判断函数的定义如下
+	\begin{center}
+		\mintinline{C}|void JudgePriority (char c,stack *OPND, char_stack *OPTR);|
+	\end{center}
+	该函数用于判断当前算数操作符\mintinline{C}|c|和栈顶操作符\mintinline{C}|OPTR->data[OPTR->top]|优先级的函数。该函数依托表\ref{优先级}实现，代码如下所示：
+	\begin{minted}[mathescape,linenos,numbersep=5pt,gobble=2,frame=lines,framesep=2mm]{C++}
+		void JudgePriority (char c,stack *OPND, char_stack *OPTR){
+			//根据算数运算符优先级表制作以下对应法则
+			//OPND是操作数栈
+			//OPTR是操作符栈
+			int isp = 0;//栈内优先数
+			int icp = 0;//栈外优先数
+			if (c == '=') icp = 0;
+			else if (c == '(') icp = 6;
+			else if (c == '*' || c == '/' || c == '%') icp = 4;
+			else if (c == '+' || c == '-') icp = 2;
+			else icp = 1;
+			
+			if (OPTR->data[OPTR->top] == '=') isp = 0;
+			else if (OPTR->data[OPTR->top] == '(') isp = 1;
+			else if (OPTR->data[OPTR->top] == '*' || OPTR->data[OPTR->top] == '/' ||
+				 OPTR->data[OPTR->top] == '%') isp = 5;
+			else if (OPTR->data[OPTR->top] == '+' || OPTR->data[OPTR->top] == '-') isp = 3;
+			else isp = 6;
+			
+			if (icp > isp){
+				//如果icp(c) > isp(OPTR)，则c进OPTR栈
+				//从中缀表达式中取下一字符送入c
+				CharStackPush(OPTR, c);
+				std::cout << "当前操作符栈为：";
+				CharStackPrint(OPTR);
+				std::cout << "当前操作数栈为：";
+				StackPrint(OPND);
+				std::cout << std::endl;
+			}
+			else if (icp < isp){
+				//如果icp(c) < isp(OPTR)
+				//OPND栈退出a2和a1，从OPTR栈退出θ，形成运算指令(a1)θ(a2)
+				//结果压入OPND栈
+				double a2 = StackTop(OPND);
+				StackPop(OPND);
+				double a1 = StackTop(OPND);
+				StackPop(OPND);
+				char this_OPTR = CharStackTop(OPTR);
+				double ans = Calculate(a1, a2 ,this_OPTR);
+				std::cout << "当前执行操作：" << a1 << this_OPTR << a2 << '=' << ans << std::endl;
+				StackPush(OPND,ans);//运算结果压入OPND栈
+				CharStackPop(OPTR);//运算符θ退出OPTR栈
+				std::cout << "当前操作符栈为：";
+				CharStackPrint(OPTR);
+				std::cout << "当前操作数栈为：";
+				StackPrint(OPND);
+				std::cout << std::endl;
+				
+				JudgePriority(c, OPND, OPTR);
+			}
+			else{
+				//果icp(c) = isp(OPTR)，有两种情况：
+				//如果c = '=' 则整个运算结束
+				//如果c = ')' 则需要从OPTR中弹出'('从而对消括号
+				if (OPTR->data[OPTR->top] == '=') return;
+				else{
+					CharStackPop(OPTR);
+					std::cout << "当前操作符栈为：";
+					CharStackPrint(OPTR);
+					std::cout << "当前操作数栈为：";
+					StackPrint(OPND);
+					std::cout << std::endl;
+				}
+			}
+		}
+	\end{minted}
+	\textbf{注意到}对于\mintinline{C}|else if (icp < isp)|所在的分支，当栈外优先级$<$栈内优先级时，需要不断将\mintinline{C}|OPTR|中的运算符弹出，直到栈外优先级$\ge$栈内优先级，才能读入下一个操作符。\\
+	因此，我们采用\textbf{递归调用}的处理方法，递归调用\mintinline{C}|JudgePriority(c,OPND,OPTR)|，直到\mintinline{C}|icp = isp|或\mintinline{C}|icp > isp|才结束递归，读入新的操作符\mintinline{C}|c|。
+	\subsection{用户使用说明}
+	\noindent 程序运行后，在终端输入中缀算数表达式。输入格式有以下要求：
+	\begin{itemize}
+		\item 中缀表达式必须以\mintinline{C}|=|结尾。
+		\item 中缀表达式间不得有“非运算符”、“非运算数”，如空格、$\#$、$\&$等。\mintinline{C}|114514 * (1919 - 810) = |是不合法的输入。
+		\item 中缀表达式必须是可计算的。\mintinline{C}|(((2+4)*(5+7)*9+1)/2=|是不合法的输入，因为左侧多了一个\mintinline{C}|(|。
+		\item 中缀表达式中的运算数必须为正整数。不能输入变量（如$a,b,e$），负数，小数等。
+	\end{itemize}
+	\subsection{测试结果}
+	\noindent 有以下测试样例供参考：
+	\begin{align*}
+		&\text{输入：}\mintinline{C}|3*(7-2)=|&\qquad \text{输出：15}\\
+		&\text{输入：}\mintinline{C}|1024/(20+8)=|&\qquad \text{输出：36.5714}\\
+		&\text{输入：}\mintinline{C}|(20+2)*(6*(2+8))=|&\qquad \text{输出：1320}\\
+		&\text{输入：}\mintinline{C}|((2+4)*(5+7)*9+1)/2=|&\qquad \text{输出：324.5}
+	\end{align*}
+	以第四组测试结果为例：
+	\begin{minted}[mathescape,linenos,numbersep=5pt,gobble=2,frame=lines,framesep=2mm]{C++}
+			当前操作符栈为：= ( 
+			当前操作数栈为：
+			
+			当前操作符栈为：= ( ( 
+			当前操作数栈为：
+			
+			当前操作符栈为：= ( ( 
+			当前操作数栈为：2 
+			
+			当前操作符栈为：= ( ( + 
+			当前操作数栈为：2 
+			
+			当前操作符栈为：= ( ( + 
+			当前操作数栈为：2 4 
+			
+			当前执行操作：2+4=6
+			当前操作符栈为：= ( ( 
+			当前操作数栈为：6 
+			
+			当前操作符栈为：= ( 
+			当前操作数栈为：6 
+			
+			当前操作符栈为：= ( * 
+			当前操作数栈为：6 
+			
+			当前操作符栈为：= ( * ( 
+			当前操作数栈为：6 
+			
+			当前操作符栈为：= ( * ( 
+			当前操作数栈为：6 5 
+			
+			当前操作符栈为：= ( * ( + 
+			当前操作数栈为：6 5 
+			
+			当前操作符栈为：= ( * ( + 
+			当前操作数栈为：6 5 7 
+			
+			当前执行操作：5+7=12
+			当前操作符栈为：= ( * ( 
+			当前操作数栈为：6 12 
+			
+			当前操作符栈为：= ( * 
+			当前操作数栈为：6 12 
+			
+			当前执行操作：6*12=72
+			当前操作符栈为：= ( 
+			当前操作数栈为：72 
+			
+			当前操作符栈为：= ( * 
+			当前操作数栈为：72 
+			
+			当前操作符栈为：= ( * 
+			当前操作数栈为：72 9 
+			
+			当前执行操作：72*9=648
+			当前操作符栈为：= ( 
+			当前操作数栈为：648 
+			
+			当前操作符栈为：= ( + 
+			当前操作数栈为：648 
+			
+			当前操作符栈为：= ( + 
+			当前操作数栈为：648 1 
+			
+			当前执行操作：648+1=649
+			当前操作符栈为：= ( 
+			当前操作数栈为：649 
+			
+			当前操作符栈为：= 
+			当前操作数栈为：649 
+			
+			当前操作符栈为：= / 
+			当前操作数栈为：649 
+			
+			当前操作符栈为：= / 
+			当前操作数栈为：649 2 
+			
+			当前执行操作：649/2=324.5
+			当前操作符栈为：= 
+			当前操作数栈为：324.5 
+	\end{minted}
+	\subsection{调试分析}
+	\subsubsection{算法的时空分析}
+	\noindent \textbf{1.时间复杂度：}
+	
+	显然，我们必须遍历中缀表达式的每个元素才能计算出中缀表达式的值，故共执行$n$次操作，其中$n$是中缀表达式的长度。
+	
+	对于每个中缀表达式的元素，即使在最坏的情况下，\textbf{我们执行的一系列操作的时间复杂度都是常数级的}（如：入栈运算符、入栈运算数、弹出运算符执行有限次、字符-数字转换执行有限次等）。因此，整个算法的时间复杂度是$O(n)$。\\
+	
+	\noindent \textbf{2.空间复杂度：}
+	
+	我们一共使用了两个栈\mintinline{C}|OPTR,OPND|，栈的最大大小取决于中缀表达式的结构。在最坏情况下，栈的大小可能与中缀表达式的长度成正比。因此，整个算法的空间复杂度是$O(n)$。
+	
+	\newpage
+	\subsection{附录}
+	\begin{minted}[mathescape,gobble=2,frame=lines,framesep=2mm]{C++}
+		#include <iostream>
+		#include <cmath>
+		//#define OVERFLOW -2
+		//#define UNDERFLOW -1
+		#define TRUE 1
+		#define FALSE 0
+		#define MAX 100//栈的大小
+		#define MAXLENGTH 100//中缀表达式的大小
+		
+		typedef struct char_stack{
+			char data[MAX];
+			int top;
+		}char_stack;
+		
+		typedef struct stack{
+			double data[MAX];
+			int top;
+		}stack;
+		
+		int i = 0;
+		
+		char_stack* InitCharStack();
+		void CharStackPush(char_stack *s, char value);//入栈
+		void CharStackPop(char_stack *s);//出栈
+		void CharStackPrint(char_stack *s);//打印当前栈内所有元素
+		int IsOperand (char s);//判断是否为操作数
+		int IsOperator (char s);//判断是否为操作符
+		void JudgePriority (char c,stack *OPND, char_stack *OPTR);//判断算数操作符的优先级
+		int Digitizer(char str[]);
+		
+		stack* InitStack();
+		void DestroyStack(stack *s);
+		int StackEmpty(stack *s);
+		double StackTop(stack *s);
+		void StackPush(stack *s, double value);
+		void StackPop(stack *s);
+		int StackSize(stack *s);
+		void StackPrint(char_stack *s);//打印当前栈内所有元素
+		double char_to_double(char s);
+		double Calculate (double x, double y, char s);
+		
+		void InfixCalculation(char InfixExpression[], stack *OPND, char_stack *OPTR);
+		
+		int main(){
+			stack *OPND = InitStack();
+			char_stack *OPTR = InitCharStack();
+			
+			char InfixExpression[MAXLENGTH];
+			gets(InfixExpression);
+			InfixCalculation(InfixExpression, OPND, OPTR);
+		}
+		
+		stack* InitStack(){
+			stack *s = new stack;
+			s->top = -1;//栈顶指针（即数组下标）赋初值-1
+			return s;
+		}
+		
+		//栈底下标是0，栈顶下标最多到MAX-1
+		void DestroyStack(stack *s){
+			delete s;
+		}
+		
+		int StackEmpty(stack *s){//如果栈空返回1，否则返回0
+			if (s->top == -1) return TRUE;
+			else return FALSE;
+		}
+		
+		double StackTop(stack *s){//返回栈顶元素
+			if (s->top > -1 && s->top < MAX) return s->data[s->top];
+			else return FALSE;
+		}
+		
+		void StackPush(stack *s, double value){//压入栈
+			if (s->top == MAX - 1) return;
+			else s->data[++s->top] = value;
+		}
+		
+		void StackPop(stack *s){//弹出栈顶元素
+			if (s->top == -1) return;
+			else{
+				s->top--;
+			}
+		}
+		
+		int StackSize(stack *s){//返回栈的大小
+			return s->top++;
+		}
+		
+		void StackPrint(stack *s){//打印当前栈内所有元素
+			for (int i = 0 ; i <= s->top ; i++){
+				std::cout << s->data[i] << " ";
+			}
+			std::cout << std::endl;
+		}
+		
+		double char_to_double(char s){
+			if (s == '0') return 0;
+			else if (s == '1') return 1;
+			else if (s == '2') return 2;
+			else if (s == '3') return 3;
+			else if (s == '4') return 4;
+			else if (s == '5') return 5;
+			else if (s == '6') return 6;
+			else if (s == '7') return 7;
+			else if (s == '8') return 8;
+			else return 9;
+		}
+		
+		double Calculate (double x, double y, char s){
+			if (s == '+') return x+y;
+			else if (s == '-') return x-y;
+			else if (s == '*') return x*y;
+			else if (s == '/') return x/y;
+			else return std::pow(x,y);
+		}
+		
+		char_stack* InitCharStack(){
+			char_stack *s = new char_stack;
+			s->top = -1;//栈顶指针（即数组下标）赋初值-1
+			return s;
+		}
+		
+		char CharStackTop (char_stack *s){
+			if (s->top > -1 && s->top < MAX) return s->data[s->top];
+			else return FALSE;
+		}
+		
+		void CharStackPush(char_stack *s, char value){//压入栈
+			if (s->top == MAX - 1) return;
+			else s->data[++s->top] = value;
+		}
+		
+		void CharStackPop(char_stack *s){
+			if (s->top == -1) return;
+			else{
+				s->top--;
+			}
+		}
+		
+		void CharStackPrint(char_stack *s){//打印当前栈内所有元素
+			for (int i = 0 ; i <= s->top ; i++){
+				std::cout << s->data[i] << " ";
+			}
+			std::cout << std::endl;
+		}
+		
+		int IsOperand (char s){
+			if (s != '(' && s != ')' && s != '+' && s != '-' && 
+			    s != '*' && s != '/' && s != '%' && s != '^' && s != '='){
+				return TRUE;
+			}
+			else return FALSE;
+		}
+		
+		int IsOperator (char s){
+			if (s == '(' || s == ')' || s == '+' || s == '-' ||
+			    s == '*' || s == '/' || s == '%' || s == '^' ||s == '='){
+				return TRUE;
+			}
+			else return FALSE;
+		}
+		
+		int Digitizer(char str[]){
+			double x = 0;//要返回的数字
+			int sign = 0;//标识变量，用于将字符串转换为十位数、百位数
+			int negative_sign = 0;//标识变量，用于将字符串转换为负数
+			while (IsOperand(str[i]) == TRUE){
+				if (sign != 1){
+					x = char_to_double(str[i]);
+					sign = 1;
+					//把这个字符转换为数字后，置sign = 1
+					//如果这是一位数，则str[i+1]必然不是数字
+					//如果这是多位数，则str[i+1]仍然是数，由下面的语句将各个位数拼接成多位数
+				}
+				else{
+					x = x * 10 + char_to_double(str[i]);
+				}
+				i++;
+			}
+			i--;
+			return x;
+		}
+		
+		void JudgePriority (char c,stack *OPND, char_stack *OPTR){
+			//s1是操作数栈
+			//s2是操作符栈
+			int isp = 0;//栈内优先数
+			int icp = 0;//栈外优先数
+			if (c == '=') icp = 0;
+			else if (c == '(') icp = 8;
+			else if (c == '^') icp = 6;
+			else if (c == '*' || c == '/' || c == '%') icp = 4;
+			else if (c == '+' || c == '-') icp = 2;
+			else icp = 1;
+			
+			if (OPTR->data[OPTR->top] == '=') isp = 0;
+			else if (OPTR->data[OPTR->top] == '(') isp = 1;
+			else if (OPTR->data[OPTR->top] == '^') isp = 7;
+			else if (OPTR->data[OPTR->top] == '*' || OPTR->data[OPTR->top] == '/' || OPTR->data[OPTR->top] == '%') isp = 5;
+			else if (OPTR->data[OPTR->top] == '+' || OPTR->data[OPTR->top] == '-') isp = 3;
+			else isp = 8;
+			
+			if (icp > isp){
+				//如果icp(c) > isp(OPTR)，则c进OPTR栈
+				//从中缀表达式中取下一字符送入c
+				CharStackPush(OPTR, c);
+				std::cout << "当前操作符栈为：";
+				CharStackPrint(OPTR);
+				std::cout << "当前操作数栈为：";
+				StackPrint(OPND);
+				std::cout << std::endl;
+			}
+			else if (icp < isp){
+				//如果icp(c) < isp(OPTR)
+				//OPND栈退出a2和a1，从OPTR栈退出θ，形成运算指令(a1)θ(a2)
+				//结果压入OPND栈
+				double a2 = StackTop(OPND);
+				StackPop(OPND);
+				double a1 = StackTop(OPND);
+				StackPop(OPND);
+				char this_OPTR = CharStackTop(OPTR);
+				double ans = Calculate(a1, a2 ,this_OPTR);
+				std::cout << "当前执行操作：" << a1 << this_OPTR << a2 << '=' << ans << std::endl;
+				StackPush(OPND,ans);//运算结果压入OPND栈
+				CharStackPop(OPTR);//运算符θ退出OPTR栈
+				std::cout << "当前操作符栈为：";
+				CharStackPrint(OPTR);
+				std::cout << "当前操作数栈为：";
+				StackPrint(OPND);
+				std::cout << std::endl;
+				
+				JudgePriority(c, OPND, OPTR);
+			}
+			else{
+				//果icp(c) = isp(OPTR)，有两种情况：
+				//如果c = '=' 则整个运算结束
+				//如果c = ')' 则需要从OPTR中弹出'('从而对消括号
+				if (OPTR->data[OPTR->top] == '=') return;
+				else{
+					CharStackPop(OPTR);
+					std::cout << "当前操作符栈为：";
+					CharStackPrint(OPTR);
+					std::cout << "当前操作数栈为：";
+					StackPrint(OPND);
+					std::cout << std::endl;
+				}
+			}
+		}
+		
+		
+		
+		
+		void InfixCalculation(char InfixExpression[], stack *OPND, char_stack *OPTR){
+			CharStackPush(OPTR, '=');
+			while(1){
+				if (IsOperand(InfixExpression[i]) == TRUE){
+					double num = Digitizer(InfixExpression);
+					//double num = char_to_double(InfixExpression[i]);
+					StackPush(OPND, num);
+					std::cout << "当前操作符栈为：";
+					CharStackPrint(OPTR);
+					std::cout << "当前操作数栈为：";
+					StackPrint(OPND);
+					std::cout << std::endl;
+				}
+				else if (IsOperator(InfixExpression[i]) == TRUE){
+					JudgePriority(InfixExpression[i],OPND,OPTR);
+				}
+				if (OPTR->data[OPTR->top] == '=' && InfixExpression[i] == '=') break;
+				i++;
+			}
+			std::cout << OPND->data[OPND->top];
+		}
+	\end{minted}
+\end{document}

@@ -1,0 +1,3 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{InfixCalculation}\PYG{p}{(}\PYG{k+kt}{char}\PYG{+w}{ }\PYG{n}{InfixExpression}\PYG{p}{[],}\PYG{+w}{ }\PYG{n}{stack}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{OPND}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{char\PYGZus{}stack}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{OPTR}\PYG{p}{);}
+\end{Verbatim}
