@@ -43,19 +43,21 @@
 \fancyhead[L]{\textbf{龚舒凯\ 2022202790}}
 
 \begin{document}
-	\title{{\Huge 数据结构与算法I实验报告{\large\linebreak\\}}{\huge 实验1：栈和队列的应用\linebreak\linebreak}}
-	\vspace{3cm}
-	%\author{\Large 龚舒凯\ 2022202790\ 应用经济-数据科学实验班}
-	\author{\\ \Large 龚舒凯\ 2022202790\ 应用经济-数据科学实验班\\
-		\hfill\\
-		\Large{\url{https://github.com/GONGSHUKAI}}\\
-		\hfill}
-	
-	\date{\today}
-	\maketitle
-	\newpage
-	\section{算术表达式求值演示}
-	\subsection{需求分析}
+\title{{\Huge 数据结构与算法I实验报告{\large\linebreak\\}}{\huge 实验1：栈和队列的应用\linebreak\linebreak}}
+\vspace{3cm}
+%\author{\Large 龚舒凯\ 2022202790\ 应用经济-数据科学实验班}
+\author{\\ \Large 龚舒凯\ 2022202790\ 应用经济-数据科学实验班\\
+	\hfill\\
+	\Large{\url{https://github.com/GONGSHUKAI}}\\
+	\hfill}
+
+\date{\today}
+\maketitle
+\newpage
+\begin{center}
+	{\huge \textbf{算数表达式求值演示}}
+\end{center}
+	\section{需求分析}
 	\noindent \textbf{问题描述：}表达式计算式实现程序设计语言的基本问题之一，也是栈的应用的一个典型例子。设计一个程序，演示用算符优先法对算术表达式求值的过程。\\
 	
 	\noindent \textbf{基本要求：}以字符序列的形式从终端输入语法正确、不含变量的整数表达式。利用课件给出的算符优先关系，实现对算术四则混合运算表达式的求值，并演示在求值过程中操作符栈、操作数栈、输入字符和主要操作的变化过程。\\
@@ -63,9 +65,10 @@
 	\noindent \textbf{输入形式：}一个以“$=$“结尾的中缀算术表达式。运算符包括$+$，$-$，$*$，$/$，$($，$)$，$=$，$\^$，参加运算的数为正整数。例如，\mintinline{C}|3*(7-2)| 或者\mintinline{C}|1024/(20+8)|或者 \mintinline{C}|(20+2)*(6*(2+8))| 或者\mintinline{C}|((2+4)*(5+7)*9+1)/2|等等。\\
 	
 	\noindent \textbf{输出形式：}表达式的计算结果。运算过程中操作符栈、操作数栈、输入字符和主要操作的内容。
-	\subsection{概要设计}
+	\newpage
+	\section{概要设计}
 	\noindent 中缀表达式的求值需要用到两个栈：操作符栈\mintinline{C}|OPTR|，操作数栈\mintinline{C}|OPND|。操作数栈存放的数据为\mintinline{C}|double|类型，而操作符栈存放的数据为\mintinline{C}|char|类型。
-	\subsubsection{抽象数据类型} 
+	\subsection{抽象数据类型} 
 	\noindent 在本程序中，用到的\textbf{抽象数据类型}定义如下所示：\\
 	
 	\noindent ADT \mintinline{C}|char_stack|$\{$
@@ -103,16 +106,17 @@
 	\qquad \mintinline{C}|StackPrint(s)| 操作结果：打印当前栈中所有元素
 	
 	\noindent $\}$
-	\subsubsection{主程序流程}
+	\subsection{主程序流程}
 	\noindent
 	\begin{enumerate}
 		\item  首先创建操作符栈\mintinline{C}|OPTR|和操作数栈\mintinline{C}|OPND|
 		\item 使用\mintinline{C}|gets()|函数获取终端输入的字符串
 		\item 调用自创建函数\mintinline{C}|InfixCalculation(str[], OPND, OPTR)|计算中缀表达式
 	\end{enumerate}
-	\subsection{详细设计}
+	\newpage
+	\section{详细设计}
 	\noindent 两种栈的基本操作在附录中有详细代码实现。这里主要论述中缀表达式计算程序中\textbf{三个核心函数的详细设计}。
-	\subsubsection{中缀表达式计算函数}
+	\subsection{中缀表达式计算函数}
 	\noindent 中缀表达式计算函数的定义如下：
 	\begin{center}
 		\mintinline{C}|void InfixCalculation(char InfixExpression[], stack *OPND, char_stack *OPTR);|
@@ -175,7 +179,7 @@
 			std::cout << OPND->data[OPND->top];//栈顶元素即为中缀表达式的计算值
 		}
 	\end{minted}
-	\subsubsection{字符-数字转换函数}
+	\subsection{字符-数字转换函数}
 	\noindent 字符-数字转换函数的定义如下
 	\begin{center}
 		\mintinline{C}|int Digitizer(char str[]);|
@@ -213,7 +217,7 @@
 			return x;
 		}
 	\end{minted}
-	\subsubsection{优先级判断函数}
+	\subsection{优先级判断函数}
 	\noindent 优先级判断函数的定义如下
 	\begin{center}
 		\mintinline{C}|void JudgePriority (char c,stack *OPND, char_stack *OPTR);|
@@ -235,7 +239,7 @@
 			if (OPTR->data[OPTR->top] == '=') isp = 0;
 			else if (OPTR->data[OPTR->top] == '(') isp = 1;
 			else if (OPTR->data[OPTR->top] == '*' || OPTR->data[OPTR->top] == '/' ||
-				 OPTR->data[OPTR->top] == '%') isp = 5;
+				OPTR->data[OPTR->top] == '%') isp = 5;
 			else if (OPTR->data[OPTR->top] == '+' || OPTR->data[OPTR->top] == '-') isp = 3;
 			else isp = 6;
 			
@@ -288,7 +292,7 @@
 	\end{minted}
 	\textbf{注意到}对于\mintinline{C}|else if (icp < isp)|所在的分支，当栈外优先级$<$栈内优先级时，需要不断将\mintinline{C}|OPTR|中的运算符弹出，直到栈外优先级$\ge$栈内优先级，才能读入下一个操作符。\\
 	因此，我们采用\textbf{递归调用}的处理方法，递归调用\mintinline{C}|JudgePriority(c,OPND,OPTR)|，直到\mintinline{C}|icp = isp|或\mintinline{C}|icp > isp|才结束递归，读入新的操作符\mintinline{C}|c|。
-	\subsection{用户使用说明}
+	\section{用户使用说明}
 	\noindent 程序运行后，在终端输入中缀算数表达式。输入格式有以下要求：
 	\begin{itemize}
 		\item 中缀表达式必须以\mintinline{C}|=|结尾。
@@ -296,7 +300,8 @@
 		\item 中缀表达式必须是可计算的。\mintinline{C}|(((2+4)*(5+7)*9+1)/2=|是不合法的输入，因为左侧多了一个\mintinline{C}|(|。
 		\item 中缀表达式中的运算数必须为正整数。不能输入变量（如$a,b,e$），负数，小数等。
 	\end{itemize}
-	\subsection{测试结果}
+	\newpage
+	\section{测试结果}
 	\noindent 有以下测试样例供参考：
 	\begin{align*}
 		&\text{输入：}\mintinline{C}|3*(7-2)=|&\qquad \text{输出：15}\\
@@ -387,8 +392,9 @@
 			当前操作符栈为：= 
 			当前操作数栈为：324.5 
 	\end{minted}
-	\subsection{调试分析}
-	\subsubsection{算法的时空分析}
+	\newpage
+	\section{调试分析}
+	\subsection{算法的时空分析}
 	\noindent \textbf{1.时间复杂度：}
 	
 	显然，我们必须遍历中缀表达式的每个元素才能计算出中缀表达式的值，故共执行$n$次操作，其中$n$是中缀表达式的长度。
@@ -400,7 +406,8 @@
 	我们一共使用了两个栈\mintinline{C}|OPTR,OPND|，栈的最大大小取决于中缀表达式的结构。在最坏情况下，栈的大小可能与中缀表达式的长度成正比。因此，整个算法的空间复杂度是$O(n)$。
 	
 	\newpage
-	\subsection{附录}
+	\section{附录}
+	\noindent 详细的代码实现如下所示。也可以通过\url{https://github.com/GONGSHUKAI/Data_Structure/tree/main/Lab_Code/Lab_1/Sept.22_Lab}下载代码原文件。
 	\begin{minted}[mathescape,gobble=2,frame=lines,framesep=2mm]{C++}
 		#include <iostream>
 		#include <cmath>
