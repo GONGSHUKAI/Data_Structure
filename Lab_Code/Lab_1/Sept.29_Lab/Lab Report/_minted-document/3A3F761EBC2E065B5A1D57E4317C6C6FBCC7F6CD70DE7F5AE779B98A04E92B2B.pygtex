@@ -1,0 +1,3 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{n}{KnightPatrol\PYGZus{}Stack}\PYG{p}{(}\PYG{n}{ChessBoard}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{row}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{col}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{n}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{patrol}\PYG{p}{)}
+\end{Verbatim}

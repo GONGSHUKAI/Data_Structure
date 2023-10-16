@@ -1,0 +1,190 @@
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
+\PYG{c+cp}{\PYGZsh{}include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZlt{}iostream\PYGZgt{}}
+\PYG{c+cp}{\PYGZsh{}include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZlt{}ctime\PYGZgt{}}
+\PYG{c+cp}{\PYGZsh{}define N 8}
+\PYG{c+cp}{\PYGZsh{}define MAXSIZE 1000}
+
+\PYG{k}{using}\PYG{+w}{ }\PYG{k}{namespace}\PYG{+w}{ }\PYG{n+nn}{std}\PYG{p}{;}
+
+\PYG{c+c1}{//骑士的8个移动方向用step[][]记录}
+\PYG{c+c1}{//第一个分量表示行位移，第二个分量表示列位移}
+\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{step}\PYG{p}{[}\PYG{l+m+mi}{8}\PYG{p}{][}\PYG{l+m+mi}{2}\PYG{p}{]}\PYG{o}{=}\PYG{p}{\PYGZob{}\PYGZob{}}\PYG{l+m+mi}{2}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{\PYGZcb{},\PYGZob{}}\PYG{l+m+mi}{1}\PYG{p}{,}\PYG{l+m+mi}{2}\PYG{p}{\PYGZcb{},\PYGZob{}}\PYG{l+m+mi}{\PYGZhy{}1}\PYG{p}{,}\PYG{l+m+mi}{2}\PYG{p}{\PYGZcb{},\PYGZob{}}\PYG{l+m+mi}{\PYGZhy{}2}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{\PYGZcb{},\PYGZob{}}\PYG{l+m+mi}{\PYGZhy{}2}\PYG{p}{,}\PYG{l+m+mi}{\PYGZhy{}1}\PYG{p}{\PYGZcb{},\PYGZob{}}\PYG{l+m+mi}{\PYGZhy{}1}\PYG{p}{,}\PYG{l+m+mi}{\PYGZhy{}2}\PYG{p}{\PYGZcb{},\PYGZob{}}\PYG{l+m+mi}{1}\PYG{p}{,}\PYG{l+m+mi}{\PYGZhy{}2}\PYG{p}{\PYGZcb{},\PYGZob{}}\PYG{l+m+mi}{2}\PYG{p}{,}\PYG{l+m+mi}{\PYGZhy{}1}\PYG{p}{\PYGZcb{}\PYGZcb{};}
+\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{depth}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{c+c1}{//搜索深度，最大为n*n(棋盘格大小)}
+\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{depth2}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{c+c1}{//搜索深度，最大为n*n(棋盘格大小)}
+\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{sum}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{c+c1}{//记录骑士巡逻的方法数（回溯法）}
+\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{sum2}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{c+c1}{//记录骑士巡逻的方法数（非递归法）}
+\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{flag}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{c+c1}{//判断骑士巡逻路线是否存在（回溯法）}
+\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{flag2}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{c+c1}{//判断骑士巡逻路线是否存在（非递归法）}
+
+\PYG{k}{typedef}\PYG{+w}{ }\PYG{k}{struct}\PYG{+w}{ }\PYG{n+nc}{coord}\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{row}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{col}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}\PYG{n}{coord}\PYG{p}{;}\PYG{c+c1}{//存放骑士的位置(row, col)}
+
+\PYG{k}{typedef}\PYG{+w}{ }\PYG{k}{struct}\PYG{+w}{ }\PYG{n+nc}{stack}\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}\PYG{n}{coord}\PYG{+w}{ }\PYG{n}{data}\PYG{p}{[}\PYG{n}{MAXSIZE}\PYG{p}{];}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{top}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}\PYG{n}{stack}\PYG{p}{;}\PYG{c+c1}{//存放骑士位置的栈}
+
+\PYG{n}{stack}\PYG{o}{*}\PYG{+w}{ }\PYG{n+nf}{InitStack}\PYG{p}{();}\PYG{c+c1}{//初始化栈}
+\PYG{k+kt}{bool}\PYG{+w}{ }\PYG{n+nf}{StackEmpty}\PYG{p}{(}\PYG{n}{stack}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{s}\PYG{p}{);}\PYG{c+c1}{//判断栈空}
+\PYG{n}{coord}\PYG{+w}{ }\PYG{n+nf}{StackTop}\PYG{p}{(}\PYG{n}{stack}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{s}\PYG{p}{);}\PYG{c+c1}{//判断栈满}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{StackPush}\PYG{p}{(}\PYG{n}{stack}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{s}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{coord}\PYG{+w}{ }\PYG{n}{value}\PYG{p}{);}\PYG{c+c1}{//入栈骑士的位置(row, col)}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{StackPop}\PYG{p}{(}\PYG{n}{stack}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{s}\PYG{p}{);}\PYG{c+c1}{//弹出栈顶元素}
+\PYG{c+c1}{//打印栈中储存的骑士巡逻坐标，n为棋盘格大小，sum为骑士巡逻的方法数}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{PrintStack}\PYG{p}{(}\PYG{n}{stack}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{s}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{ChessBoard}\PYG{p}{[}\PYG{n}{N}\PYG{p}{][}\PYG{n}{N}\PYG{p}{],}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{n}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{sum}\PYG{p}{);}
+
+\PYG{n}{coord}\PYG{o}{*}\PYG{+w}{ }\PYG{n+nf}{Position}\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{row}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{col}\PYG{p}{);}\PYG{c+c1}{//输入骑士所在行列，返回骑士所在坐标}
+\PYG{k+kt}{bool}\PYG{+w}{ }\PYG{n+nf}{ValidIndex}\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j}\PYG{p}{,}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{n}\PYG{p}{);}\PYG{c+c1}{//判断[i][j]是否为一个合法的位置}
+\PYG{c+c1}{//打印整个棋盘，n为棋盘格大小，sum为骑士巡逻的方法数}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{PrintChessboard}\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{ChessBoard}\PYG{p}{[}\PYG{n}{N}\PYG{p}{][}\PYG{n}{N}\PYG{p}{],}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{n}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{sum}\PYG{p}{);}
+\PYG{c+c1}{//递归回溯法寻找骑士巡逻路线}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{KnightPatrol\PYGZus{}Recursion}\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{ChessBoard}\PYG{p}{[}\PYG{n}{N}\PYG{p}{][}\PYG{n}{N}\PYG{p}{],}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{row}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{col}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{n}\PYG{p}{);}
+\PYG{c+c1}{//依托栈的非递归法寻找骑士巡逻路线}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{KnightPatrol\PYGZus{}Stack}\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{ChessBoard}\PYG{p}{[}\PYG{n}{N}\PYG{p}{][}\PYG{n}{N}\PYG{p}{],}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{rol}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{col}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{n}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{stack}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{patrol}\PYG{p}{);}
+
+\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n+nf}{main}\PYG{p}{()\PYGZob{}}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{ChessBoard}\PYG{p}{[}\PYG{n}{N}\PYG{p}{][}\PYG{n}{N}\PYG{p}{];}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{n}\PYG{p}{;}\PYG{c+c1}{//棋盘大小}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{row}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{col}\PYG{p}{;}\PYG{c+c1}{//骑士的起始位置}
+\PYG{+w}{	}\PYG{n}{memset}\PYG{p}{(}\PYG{n}{ChessBoard}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{+w}{ }\PYG{k}{sizeof}\PYG{p}{(}\PYG{n}{ChessBoard}\PYG{p}{));}\PYG{c+c1}{//将棋盘置0}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}请输入棋盘的边长n：\PYGZdq{}}\PYG{p}{;}
+\PYG{+w}{	}\PYG{n}{cin}\PYG{+w}{ }\PYG{o}{\PYGZgt{}\PYGZgt{}}\PYG{+w}{ }\PYG{n}{n}\PYG{p}{;}
+\PYG{+w}{	}\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}请输入骑士在棋盘上的起始位置row, col：\PYGZdq{}}\PYG{p}{;}
+\PYG{+w}{	}\PYG{n}{cin}\PYG{+w}{ }\PYG{o}{\PYGZgt{}\PYGZgt{}}\PYG{+w}{ }\PYG{n}{row}\PYG{+w}{ }\PYG{o}{\PYGZgt{}\PYGZgt{}}\PYG{+w}{ }\PYG{n}{col}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}骑士巡逻方法1:递归回溯法：\PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{clock\PYGZus{}t}\PYG{+w}{ }\PYG{n}{startTime}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{clock}\PYG{p}{();}\PYG{c+c1}{//计时开始}
+\PYG{+w}{	}\PYG{n}{ChessBoard}\PYG{p}{[}\PYG{n}{row}\PYG{p}{][}\PYG{n}{col}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{o}{++}\PYG{n}{depth}\PYG{p}{;}
+\PYG{+w}{	}\PYG{n}{KnightPatrol\PYGZus{}Recursion}\PYG{p}{(}\PYG{n}{ChessBoard}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{row}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{col}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{n}\PYG{p}{);}
+\PYG{+w}{	}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{flag}\PYG{+w}{ }\PYG{o}{==}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{)}\PYG{+w}{ }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}不存在骑士巡逻路线\PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{clock\PYGZus{}t}\PYG{+w}{ }\PYG{n}{endTime}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{clock}\PYG{p}{();}\PYG{c+c1}{//计时结束}
+\PYG{+w}{	}\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}运行时间：\PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{p}{(}\PYG{k+kt}{double}\PYG{p}{)(}\PYG{n}{endTime}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{n}{startTime}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{/}\PYG{+w}{ }\PYG{n}{CLOCKS\PYGZus{}PER\PYGZus{}SEC}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}s\PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{n}{memset}\PYG{p}{(}\PYG{n}{ChessBoard}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{+w}{ }\PYG{k}{sizeof}\PYG{p}{(}\PYG{n}{ChessBoard}\PYG{p}{));}\PYG{c+c1}{//将棋盘置0}
+\PYG{+w}{	}\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}骑士巡逻方法2:依托栈实现的非递归法：\PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{clock\PYGZus{}t}\PYG{+w}{ }\PYG{n}{startTime2}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{clock}\PYG{p}{();}\PYG{c+c1}{//计时开始}
+\PYG{+w}{	}\PYG{n}{stack}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{patrol}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{InitStack}\PYG{p}{();}\PYG{c+c1}{//创建一个存放骑士坐标的栈}
+\PYG{+w}{	}\PYG{n}{coord}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{init}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Position}\PYG{p}{(}\PYG{n}{row}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{col}\PYG{p}{);}\PYG{c+c1}{//骑士的初始位置}
+\PYG{+w}{	}\PYG{n}{StackPush}\PYG{p}{(}\PYG{n}{patrol}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{init}\PYG{p}{);}
+\PYG{+w}{	}\PYG{n}{ChessBoard}\PYG{p}{[}\PYG{n}{row}\PYG{p}{][}\PYG{n}{col}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{o}{++}\PYG{n}{depth2}\PYG{p}{;}
+\PYG{+w}{	}\PYG{n}{KnightPatrol\PYGZus{}Stack}\PYG{p}{(}\PYG{n}{ChessBoard}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{row}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{col}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{n}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{patrol}\PYG{p}{);}
+\PYG{+w}{	}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{flag2}\PYG{+w}{ }\PYG{o}{==}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{)}\PYG{+w}{ }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}不存在骑士巡逻路线\PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{clock\PYGZus{}t}\PYG{+w}{ }\PYG{n}{endTime2}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{clock}\PYG{p}{();}\PYG{c+c1}{//计时结束}
+\PYG{+w}{	}\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}运行时间：\PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{p}{(}\PYG{k+kt}{double}\PYG{p}{)(}\PYG{n}{endTime2}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{n}{startTime2}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{/}\PYG{+w}{ }\PYG{n}{CLOCKS\PYGZus{}PER\PYGZus{}SEC}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}s\PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{n}{stack}\PYG{o}{*}\PYG{+w}{ }\PYG{n+nf}{InitStack}\PYG{p}{()\PYGZob{}}
+\PYG{+w}{	}\PYG{n}{stack}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{s}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{new}\PYG{+w}{ }\PYG{n}{stack}\PYG{p}{;}
+\PYG{+w}{	}\PYG{n}{s}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{top}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{\PYGZhy{}1}\PYG{p}{;}\PYG{c+c1}{//栈顶指针（即数组下标）赋初值\PYGZhy{}1}
+\PYG{+w}{	}\PYG{k}{return}\PYG{+w}{ }\PYG{n}{s}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k+kt}{bool}\PYG{+w}{ }\PYG{n+nf}{StackEmpty}\PYG{p}{(}\PYG{n}{stack}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{s}\PYG{p}{)\PYGZob{}}\PYG{c+c1}{//如果栈空返回1，否则返回0}
+\PYG{+w}{	}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{s}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{top}\PYG{+w}{ }\PYG{o}{==}\PYG{+w}{ }\PYG{l+m+mi}{\PYGZhy{}1}\PYG{p}{)}\PYG{+w}{ }\PYG{k}{return}\PYG{+w}{ }\PYG{n+nb}{true}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k}{else}\PYG{+w}{ }\PYG{k}{return}\PYG{+w}{ }\PYG{n+nb}{false}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{n}{coord}\PYG{+w}{ }\PYG{n+nf}{StackTop}\PYG{p}{(}\PYG{n}{stack}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{s}\PYG{p}{)\PYGZob{}}\PYG{c+c1}{//返回栈顶元素}
+\PYG{+w}{	}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{s}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{top}\PYG{+w}{ }\PYG{o}{\PYGZgt{}}\PYG{+w}{ }\PYG{l+m+mi}{\PYGZhy{}1}\PYG{+w}{ }\PYG{o}{\PYGZam{}\PYGZam{}}\PYG{+w}{ }\PYG{n}{s}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{top}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{MAXSIZE}\PYG{p}{)}\PYG{+w}{ }\PYG{k}{return}\PYG{+w}{ }\PYG{n}{s}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{data}\PYG{p}{[}\PYG{n}{s}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{top}\PYG{p}{];}
+\PYG{+w}{	}\PYG{k}{else}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{n}{coord}\PYG{+w}{ }\PYG{n}{wrongpos}\PYG{p}{;}
+\PYG{+w}{		}\PYG{n}{wrongpos}\PYG{p}{.}\PYG{n}{row}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{\PYGZhy{}1}\PYG{p}{;}
+\PYG{+w}{		}\PYG{n}{wrongpos}\PYG{p}{.}\PYG{n}{col}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{\PYGZhy{}1}\PYG{p}{;}
+\PYG{+w}{		}\PYG{k}{return}\PYG{+w}{ }\PYG{n}{wrongpos}\PYG{p}{;}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{StackPush}\PYG{p}{(}\PYG{n}{stack}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{s}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{coord}\PYG{+w}{ }\PYG{n}{value}\PYG{p}{)\PYGZob{}}\PYG{c+c1}{//压入栈}
+\PYG{+w}{	}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{s}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{top}\PYG{+w}{ }\PYG{o}{==}\PYG{+w}{ }\PYG{n}{MAXSIZE}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{p}{)}\PYG{+w}{ }\PYG{k}{return}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k}{else}\PYG{+w}{ }\PYG{n}{s}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{data}\PYG{p}{[}\PYG{o}{++}\PYG{n}{s}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{top}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{value}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{StackPop}\PYG{p}{(}\PYG{n}{stack}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{s}\PYG{p}{)\PYGZob{}}\PYG{c+c1}{//弹出栈顶元素}
+\PYG{+w}{	}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{s}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{top}\PYG{+w}{ }\PYG{o}{==}\PYG{+w}{ }\PYG{l+m+mi}{\PYGZhy{}1}\PYG{p}{)}\PYG{+w}{ }\PYG{k}{return}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k}{else}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{n}{s}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{top}\PYG{o}{\PYGZhy{}\PYGZhy{}}\PYG{p}{;}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{n}{coord}\PYG{o}{*}\PYG{+w}{ }\PYG{n+nf}{Position}\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{row}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{col}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{	}\PYG{n}{coord}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{pos}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{new}\PYG{+w}{ }\PYG{n}{coord}\PYG{p}{;}
+\PYG{+w}{	}\PYG{n}{pos}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{row}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{row}\PYG{p}{;}
+\PYG{+w}{	}\PYG{n}{pos}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{col}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{col}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k}{return}\PYG{+w}{ }\PYG{n}{pos}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k+kt}{bool}\PYG{+w}{ }\PYG{n+nf}{ValidIndex}\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j}\PYG{p}{,}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{n}\PYG{p}{)\PYGZob{}}\PYG{c+c1}{//n是棋盘的大小}
+\PYG{+w}{	}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZgt{}=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{o}{\PYGZam{}\PYGZam{}}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{\PYGZgt{}=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{o}{\PYGZam{}\PYGZam{}}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{n}\PYG{+w}{ }\PYG{o}{\PYGZam{}\PYGZam{}}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{n}\PYG{p}{)}\PYG{+w}{ }\PYG{k}{return}\PYG{+w}{ }\PYG{n+nb}{true}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k}{else}\PYG{+w}{ }\PYG{k}{return}\PYG{+w}{ }\PYG{n+nb}{false}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{PrintChessboard}\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{ChessBoard}\PYG{p}{[}\PYG{n}{N}\PYG{p}{][}\PYG{n}{N}\PYG{p}{],}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{n}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{sum}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{	}\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}骑士巡逻路线\PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{sum}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{n}\PYG{+w}{ }\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{o}{++}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{		}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{n}\PYG{+w}{ }\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{o}{++}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{			}\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{ChessBoard}\PYG{p}{[}\PYG{n}{i}\PYG{p}{][}\PYG{n}{j}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} \PYGZdq{}}\PYG{p}{;}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{		}\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{PrintStack}\PYG{p}{(}\PYG{n}{stack}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{s}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{ChessBoard}\PYG{p}{[}\PYG{n}{N}\PYG{p}{][}\PYG{n}{N}\PYG{p}{],}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{n}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{sum}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{	}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}=}\PYG{+w}{ }\PYG{n}{s}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{top}\PYG{+w}{ }\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{o}{++}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{		}\PYG{n}{ChessBoard}\PYG{p}{[}\PYG{n}{s}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{data}\PYG{p}{[}\PYG{n}{i}\PYG{p}{].}\PYG{n}{row}\PYG{p}{][}\PYG{n}{s}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{data}\PYG{p}{[}\PYG{n}{i}\PYG{p}{].}\PYG{n}{col}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{i}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{;}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{n}{PrintChessboard}\PYG{p}{(}\PYG{n}{ChessBoard}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{n}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{sum}\PYG{p}{);}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{KnightPatrol\PYGZus{}Recursion}\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{ChessBoard}\PYG{p}{[}\PYG{n}{N}\PYG{p}{][}\PYG{n}{N}\PYG{p}{],}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{row}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{col}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{n}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{	}\PYG{c+c1}{//递归回溯法解决骑士巡逻问题}
+\PYG{+w}{	}\PYG{c+c1}{//row, col是骑士的行列}
+\PYG{+w}{	}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{depth}\PYG{+w}{ }\PYG{o}{\PYGZgt{}=}\PYG{+w}{ }\PYG{n}{n}\PYG{+w}{ }\PYG{o}{*}\PYG{+w}{ }\PYG{n}{n}\PYG{p}{)\PYGZob{}}\PYG{+w}{ }\PYG{c+c1}{//搜索深度达到n*n说明已经搜到答案}
+\PYG{+w}{		}\PYG{n}{sum}\PYG{o}{++}\PYG{p}{;}\PYG{c+c1}{//骑士巡逻方法数+1}
+\PYG{+w}{		}\PYG{n}{PrintChessboard}\PYG{p}{(}\PYG{n}{ChessBoard}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{n}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{sum}\PYG{p}{);}
+\PYG{+w}{		}\PYG{n}{flag}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{p}{;}\PYG{c+c1}{//骑士巡逻路线存在}
+\PYG{+w}{		}\PYG{k}{return}\PYG{p}{;}\PYG{c+c1}{//回溯}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{l+m+mi}{8}\PYG{+w}{ }\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{o}{++}\PYG{p}{)\PYGZob{}}\PYG{c+c1}{//骑士分别向8个方向移动}
+\PYG{+w}{		}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{new\PYGZus{}row}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{row}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{step}\PYG{p}{[}\PYG{n}{i}\PYG{p}{][}\PYG{l+m+mi}{0}\PYG{p}{];}
+\PYG{+w}{		}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{new\PYGZus{}col}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{col}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{step}\PYG{p}{[}\PYG{n}{i}\PYG{p}{][}\PYG{l+m+mi}{1}\PYG{p}{];}
+\PYG{+w}{		}\PYG{c+c1}{//如果移动方向合法，且该方向之前没有走过}
+\PYG{+w}{		}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{ValidIndex}\PYG{p}{(}\PYG{n}{new\PYGZus{}row}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{new\PYGZus{}col}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{n}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{==}\PYG{+w}{ }\PYG{n+nb}{true}\PYG{+w}{ }\PYG{o}{\PYGZam{}\PYGZam{}}\PYG{+w}{ }\PYG{n}{ChessBoard}\PYG{p}{[}\PYG{n}{new\PYGZus{}row}\PYG{p}{][}\PYG{n}{new\PYGZus{}col}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{==}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{			}\PYG{n}{ChessBoard}\PYG{p}{[}\PYG{n}{new\PYGZus{}row}\PYG{p}{][}\PYG{n}{new\PYGZus{}col}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{o}{++}\PYG{n}{depth}\PYG{p}{;}
+\PYG{+w}{			}\PYG{n}{KnightPatrol\PYGZus{}Recursion}\PYG{p}{(}\PYG{n}{ChessBoard}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{new\PYGZus{}row}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{new\PYGZus{}col}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{n}\PYG{p}{);}\PYG{c+c1}{//从新位置开始搜索}
+\PYG{+w}{			}\PYG{c+c1}{//到这里仍然没搜到，则说明这条路走不通，需回溯}
+\PYG{+w}{			}\PYG{n}{depth}\PYG{o}{\PYGZhy{}\PYGZhy{}}\PYG{p}{;}\PYG{c+c1}{//搜索深度\PYGZhy{}1}
+\PYG{+w}{			}\PYG{n}{ChessBoard}\PYG{p}{[}\PYG{n}{new\PYGZus{}row}\PYG{p}{][}\PYG{n}{new\PYGZus{}col}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{c+c1}{//搜索过的位置置零}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{KnightPatrol\PYGZus{}Stack}\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{ChessBoard}\PYG{p}{[}\PYG{n}{N}\PYG{p}{][}\PYG{n}{N}\PYG{p}{],}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{row}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{col}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{n}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{stack}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{patrol}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{	}\PYG{c+c1}{//非递归法解决骑士巡逻问题}
+\PYG{+w}{	}\PYG{c+c1}{//rol, col是骑士的行列}
+\PYG{+w}{	}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{depth2}\PYG{+w}{ }\PYG{o}{==}\PYG{+w}{ }\PYG{n}{n}\PYG{+w}{ }\PYG{o}{*}\PYG{+w}{ }\PYG{n}{n}\PYG{p}{)\PYGZob{}}\PYG{+w}{ }\PYG{c+c1}{//搜索深度达到n*n说明已经搜到答案}
+\PYG{+w}{		}\PYG{n}{sum2}\PYG{o}{++}\PYG{p}{;}\PYG{c+c1}{//骑士巡逻方法数+1}
+\PYG{+w}{		}\PYG{n}{PrintStack}\PYG{p}{(}\PYG{n}{patrol}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{ChessBoard}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{n}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{sum2}\PYG{p}{);}
+\PYG{+w}{		}\PYG{n}{flag2}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{p}{;}\PYG{c+c1}{//骑士巡逻路线存在}
+\PYG{+w}{		}\PYG{k}{return}\PYG{p}{;}\PYG{c+c1}{//回溯}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{l+m+mi}{8}\PYG{+w}{ }\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{o}{++}\PYG{p}{)\PYGZob{}}\PYG{c+c1}{//骑士分别向8个方向移动}
+\PYG{+w}{		}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{new\PYGZus{}row}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{row}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{step}\PYG{p}{[}\PYG{n}{i}\PYG{p}{][}\PYG{l+m+mi}{0}\PYG{p}{];}
+\PYG{+w}{		}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{new\PYGZus{}col}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{col}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{step}\PYG{p}{[}\PYG{n}{i}\PYG{p}{][}\PYG{l+m+mi}{1}\PYG{p}{];}
+\PYG{+w}{		}\PYG{c+c1}{//如果移动方向合法，且该方向之前没有走过}
+\PYG{+w}{		}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{ValidIndex}\PYG{p}{(}\PYG{n}{new\PYGZus{}row}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{new\PYGZus{}col}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{n}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{==}\PYG{+w}{ }\PYG{n+nb}{true}\PYG{+w}{ }\PYG{o}{\PYGZam{}\PYGZam{}}\PYG{+w}{ }\PYG{n}{ChessBoard}\PYG{p}{[}\PYG{n}{new\PYGZus{}row}\PYG{p}{][}\PYG{n}{new\PYGZus{}col}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{==}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{			}\PYG{n}{ChessBoard}\PYG{p}{[}\PYG{n}{new\PYGZus{}row}\PYG{p}{][}\PYG{n}{new\PYGZus{}col}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{o}{++}\PYG{n}{depth2}\PYG{p}{;}
+\PYG{+w}{			}\PYG{n}{coord}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{nextpos}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Position}\PYG{p}{(}\PYG{n}{new\PYGZus{}row}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{new\PYGZus{}col}\PYG{p}{);}\PYG{c+c1}{//记录新位置}
+\PYG{+w}{			}\PYG{n}{StackPush}\PYG{p}{(}\PYG{n}{patrol}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{nextpos}\PYG{p}{);}\PYG{c+c1}{//将新位置入栈}
+\PYG{+w}{			}\PYG{n}{KnightPatrol\PYGZus{}Stack}\PYG{p}{(}\PYG{n}{ChessBoard}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{new\PYGZus{}row}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{new\PYGZus{}col}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{n}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{patrol}\PYG{p}{);}\PYG{c+c1}{//从新位置开始搜索}
+\PYG{+w}{			}\PYG{c+c1}{//到这里仍然没搜到，则说明这条路走不通，需回溯}
+\PYG{+w}{			}\PYG{n}{ChessBoard}\PYG{p}{[}\PYG{n}{new\PYGZus{}row}\PYG{p}{][}\PYG{n}{new\PYGZus{}col}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{c+c1}{//搜索过的位置置零}
+\PYG{+w}{			}\PYG{n}{depth2}\PYG{o}{\PYGZhy{}\PYGZhy{}}\PYG{p}{;}\PYG{c+c1}{//搜索深度\PYGZhy{}1}
+\PYG{+w}{			}\PYG{n}{StackPop}\PYG{p}{(}\PYG{n}{patrol}\PYG{p}{);}\PYG{c+c1}{//将走不通的位置弹出栈}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+\end{Verbatim}
