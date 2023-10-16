@@ -40,7 +40,7 @@ int main() {
     S->length = 100;
     S->ch = new char[S->length + 1];
 
-    char char1[] = "Hello, World!";
+    char char1[] = "Hello, World, Fuck you!";
     char char2[] = "World";
     char char3[] = "Sir Gong";
     strcpy(S->ch, char1);
