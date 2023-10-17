@@ -1,0 +1,3 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{n}{getline}\PYG{p}{(}\PYG{n}{file}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{line}\PYG{p}{)}
+\end{Verbatim}

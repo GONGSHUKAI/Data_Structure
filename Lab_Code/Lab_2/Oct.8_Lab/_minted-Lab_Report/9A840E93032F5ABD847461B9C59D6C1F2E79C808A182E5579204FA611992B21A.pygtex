@@ -1,0 +1,6 @@
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
+\PYG{+w}{  }\PYG{n}{Transaction}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{n}{in}\PYG{+w}{ }\PYG{n}{Block}\PYG{o}{:}\PYG{+w}{ }\PYG{l+m+mi}{514}
+\PYG{+w}{  }\PYG{n}{Transaction}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{n}{input}\PYG{+w}{ }\PYG{n}{count}\PYG{o}{:}\PYG{+w}{ }\PYG{l+m+mi}{1}
+\PYG{+w}{  }\PYG{n}{Transaction}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{n}{output}\PYG{+w}{ }\PYG{n}{count}\PYG{o}{:}\PYG{+w}{ }\PYG{l+m+mi}{1}
+\PYG{+w}{  }\PYG{n}{Transaction}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{n}{Coinbase}\PYG{o}{:}\PYG{+w}{ }\PYG{l+m+mi}{1}
+\end{Verbatim}

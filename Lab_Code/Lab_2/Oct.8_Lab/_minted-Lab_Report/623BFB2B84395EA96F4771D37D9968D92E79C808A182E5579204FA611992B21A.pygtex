@@ -1,0 +1,6 @@
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
+\PYG{+w}{  }\PYG{n}{Time}\PYG{+w}{ }\PYG{n}{spent}\PYG{+w}{ }\PYG{n}{reading}\PYG{+w}{ }\PYG{n}{data}\PYG{o}{:}\PYG{+w}{ }\PYG{l+m+mf}{35.8814}\PYG{n}{s}
+\PYG{+w}{  }\PYG{n}{Block}\PYG{+w}{ }\PYG{n}{count}\PYG{o}{:}\PYG{+w}{ }\PYG{l+m+mi}{32490}
+\PYG{+w}{  }\PYG{n+nl}{不合法交易数}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mi}{218}
+\PYG{+w}{  }\PYG{n+nl}{合法交易数}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mi}{32491}
+\end{Verbatim}

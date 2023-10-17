@@ -1,0 +1,3 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{CheckValidTransaction}\PYG{p}{(}\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{firstblock}\PYG{p}{);}
+\end{Verbatim}

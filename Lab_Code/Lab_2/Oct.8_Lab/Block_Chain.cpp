@@ -2,6 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <ctime>
 #define yes 100
 #define no -100
 #define NotUsed 200
@@ -53,6 +54,8 @@ typedef struct block{
 
 block* FileToBlock();
 void FileToTransaction(block *currentBlock);
+void FileToInput(block *currentBlock);
+void FileToOutput(block *currentBlock);
 int BlocksLength(block *firstblock);
 void BlockInfo(int height, block *firstblock);
 int TransactionInfo(string txid, block *firstblock, block *endblock);
@@ -63,7 +66,7 @@ transaction* FindPrevOutput(string My_txid, block *firstblock, block *endblock);
 
 block* FileToBlock() {
     block *firstBlock = new block;
-    ifstream file("demo/blocks.csv"); //打开CSV文件
+    ifstream file("2009data/blocks.csv"); //打开CSV文件
     if (!file) {
         cout << "无法打开文件" << endl;
         return nullptr;
@@ -120,7 +123,7 @@ block* FileToBlock() {
 }
 
 void FileToTransaction(block *currentBlock){
-    ifstream file("demo/transactions.csv");
+    ifstream file("2009data/transactions.csv");
     if (!file) {
         cout << "无法打开文件" << endl;
         return;
@@ -175,7 +178,7 @@ void FileToTransaction(block *currentBlock){
 }
 
 void FileToInput(block *currentBlock){
-    ifstream file("demo/inputs.csv");
+    ifstream file("2009data/inputs.csv");
     if (!file) {
         cout << "无法打开文件" << endl;
         return;
@@ -235,7 +238,7 @@ void FileToInput(block *currentBlock){
 }
 
 void FileToOutput(block *currentBlock){
-    ifstream file("demo/outputs.csv");
+    ifstream file("2009data/outputs.csv");
     if (!file) {
         cout << "无法打开文件" << endl;
         return;
@@ -394,7 +397,6 @@ void CheckValidTransaction(block *firstblock){
     //a、有一类特殊交易，其is_coinbase字段为true，该类交易的特点是没有input，只有output。该类交易是合法的，其中的output可能被后续的transaction所引用。
     //b、每一个output只能被使用一次，即便还有剩余的value没有被使用。
     //c、如果某个交易是非法的，那么引用了该交易作为input的交易也同样是非法的（非法交易不会被包括在区块内，如果使用了则相当于违反了规则a）。
-
     while (p != nullptr){
         while (p->transactions[i].txid != ""){
             //规则1：其is_coinbase字段为true，该类交易的特点是没有input，只有output。该类交易是合法的，其中的output可能被后续的transaction所引用。
@@ -466,18 +468,22 @@ transaction* FindPrevOutput(string My_txid, block *firstblock, block *endblock){
 }
 
 int main(){
+    clock_t startTime = clock();//计时开始
     block* firstBlock = InitBlockChain();
-    cout << "区块总数" << BlocksLength(firstBlock) << endl;
+    clock_t endTime = clock();//计时结束
+    cout << "Time spent reading data: " <<(double)(endTime - startTime) / CLOCKS_PER_SEC << "s" << endl;
+    
+    cout << "Block count: " << BlocksLength(firstBlock) << endl;
     CheckValidTransaction(firstBlock);
     cout << endl;
     int height;
-    cout << "请输入区块高度height: " << endl;
+    cout << "Please input block's height: " << endl;
     cin >> height;
     cout << endl;
     BlockInfo(height, firstBlock);
 
     string txid;
-    cout << "请输入交易号txid: " << endl;
+    cout << "Please input transaction's txid: " << endl;
     cin >> txid;
     cout << endl;
     TransactionInfo(txid, firstBlock, nullptr);

@@ -1,0 +1,20 @@
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
+\PYG{+w}{  }\PYG{n}{Block}\PYG{+w}{ }\PYG{n}{Height}\PYG{o}{:}\PYG{+w}{ }\PYG{l+m+mi}{114}
+\PYG{+w}{  }\PYG{n}{Block}\PYG{+w}{ }\PYG{n}{Hash}\PYG{o}{:}\PYG{+w}{ }\PYG{l+m+mo}{000000005}\PYG{n}{d7dd40c24c4b6334812f48d4386c7756fb9006d6c74300837c91ebd}
+\PYG{+w}{  }\PYG{n}{Block}\PYG{+w}{ }\PYG{n}{prevHash}\PYG{o}{:}\PYG{+w}{ }\PYG{l+m+mo}{0000000001}\PYG{l+m+mi}{9176838}\PYG{n}{de40606d70738084f2fbc48a50548eeeac3ceb857677c6d}
+\PYG{+w}{  }\PYG{n}{Block}\PYG{+w}{ }\PYG{n}{merkleRoot}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{ca7b0295546806c9b6631f8bc89ed0b55434ee5f8ce6198a918af18c6da9237c}
+\PYG{+w}{  }\PYG{n}{Block}\PYG{+w}{ }\PYG{n}{nonce}\PYG{o}{:}\PYG{+w}{ }\PYG{l+m+mi}{2979771436}
+
+\PYG{+w}{  }\PYG{n}{Block}\PYG{+w}{ }\PYG{n}{Transaction}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{n}{txid}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{ca7b0295546806c9b6631f8bc89ed0b55434ee5f8ce6198a918af18c6da9237c}
+\PYG{+w}{  }\PYG{n}{Block}\PYG{+w}{ }\PYG{n}{Transaction}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{n}{input}\PYG{+w}{ }\PYG{n}{count}\PYG{o}{:}\PYG{+w}{ }\PYG{l+m+mi}{1}
+\PYG{+w}{  }\PYG{n}{Block}\PYG{+w}{ }\PYG{n}{Transaction}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{n}{output}\PYG{+w}{ }\PYG{n}{count}\PYG{o}{:}\PYG{+w}{ }\PYG{l+m+mi}{1}
+\PYG{+w}{  }\PYG{n}{Block}\PYG{+w}{ }\PYG{n}{Transaction}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{n}{Coinbase}\PYG{o}{:}\PYG{+w}{ }\PYG{l+m+mi}{1}
+\PYG{+w}{  }\PYG{n}{Transaction}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{n}{in}\PYG{+w}{ }\PYG{n}{Block}\PYG{o}{:}\PYG{+w}{ }\PYG{l+m+mi}{114}
+\PYG{+w}{  }\PYG{n}{Transaction}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{n}{input}\PYG{+w}{ }\PYG{n}{count}\PYG{o}{:}\PYG{+w}{ }\PYG{l+m+mi}{1}
+\PYG{+w}{  }\PYG{n}{Transaction}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{n}{output}\PYG{+w}{ }\PYG{n}{count}\PYG{o}{:}\PYG{+w}{ }\PYG{l+m+mi}{1}
+\PYG{+w}{  }\PYG{n}{Transaction}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{n}{Coinbase}\PYG{o}{:}\PYG{+w}{ }\PYG{l+m+mi}{1}
+\PYG{+w}{  }\PYG{n}{Transaction}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{n}{output}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{n}{txid}\PYG{o}{:}\PYG{+w}{ }\PYG{n}{ca7b0295546806c9b6631f8bc89ed0b55434ee5f8ce6198a918af18c6da9237c}
+\PYG{+w}{  }\PYG{n}{Transaction}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{n}{output}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{n}{index}\PYG{o}{:}\PYG{+w}{ }\PYG{l+m+mi}{0}
+\PYG{+w}{  }\PYG{n}{Transaction}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{n}{output}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{n}{value}\PYG{o}{:}\PYG{+w}{ }\PYG{l+m+mi}{500000}
+\PYG{+w}{  }\PYG{n}{Transaction}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{n}{output}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{n}{script}\PYG{o}{:}\PYG{+w}{ }\PYG{l+m+mi}{4104}\PYG{n}{cd10ce592a9c4918948a5b4e92e9702e6c36eed1a627594f67066792b3a227cedba7be9df6e8117bee0499e243e4df90e13efdd8e14e1778e2247c0e16661057ac}
+\end{Verbatim}
