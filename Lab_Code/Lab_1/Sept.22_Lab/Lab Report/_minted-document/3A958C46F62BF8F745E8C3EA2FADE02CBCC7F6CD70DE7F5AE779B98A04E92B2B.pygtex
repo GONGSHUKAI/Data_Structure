@@ -1,3 +1,0 @@
-\begin{Verbatim}[commandchars=\\\{\}]
-\PYG{n}{InfixCalculation}\PYG{p}{(}\PYG{n}{str}\PYG{p}{[],}\PYG{+w}{ }\PYG{n}{OPND}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{OPTR}\PYG{p}{)}
-\end{Verbatim}

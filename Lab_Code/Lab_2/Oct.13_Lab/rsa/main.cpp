@@ -3,56 +3,58 @@
 using std::cout;
 using std::endl;
 using std::cin;
-int main()
-{
 
+
+//Ê¾Àı°üÀ¨ std::hashÓÃ·¨¡¢Êı×ÖÇ©Ãû¡¢Ç©ÃûÑéÖ¤£¬rsaÍ·ÎÄ¼şÖĞÒÑ°üº¬ÏàÓ¦µÄ¿â
+
+int main() {
+    //std::hashÊ¹ÓÃ·½·¨
     std::hash<std::string> h;
-    string str0 = "20221009";
+    string str0 = "2023";
     size_t n0 = h(str0);
-    string str_h= std::to_string(n0);
-    cout<<"HASH of "<<str0<<" is: "<<str_h<<endl;
+    string str_h = std::to_string(n0);
+    cout << "HASH of " << str0 << " is: " << str_h << endl << endl;
+
+    //¸ø¶¨¹«Ô¿ºÍÃ÷ÎÄ Éú³ÉË½Ô¿ ½øĞĞÊı×ÖÇ©Ãû
+    Rsa rsaSign; //rsa¶ÔÏó£¬ÓÃÓÚÇ©Ãû
+    BigInt c, m;
+    int publicKey = 0; //¹«Ô¿
+    BigInt privateKey; //Ë½Ô¿
+    BigInt signature;  //Ç©Ãû
+
+    rsaSign.init(0); //³õÊ¼»¯
+    //ÊäÈë¹«Ô¿
+    cout << "Please input public key: " << endl;
+    cin >> publicKey;
+
+    rsaSign.setPu(publicKey);      //ÉèÖÃ¹«Ô¿£¬Í¬Ê±Éú³ÉË½Ô¿
+    privateKey = rsaSign.showPr(); //»ñÈ¡Ë½Ô¿
+    cout << "generated private key: " << privateKey << endl << endl;
+
+    cout << "use private key to verify" << endl;
+
+    // Êı×ÖÇ©Ãûº¯Êı sign£¨rsa£¬signature£¬message£©µÚÈı¸öº¯ÊıÎª±»Ç©ÃûµÄ×Ö·û´®£¨Ã÷ÎÄ£©
+    // Ê¹ÓÃrsaÀïµÄË½Ô¿½øĞĞÇ©Ãû
+    // ´ËÊµÑéÖ±½ÓÊ¹ÓÃpublicKeyµ±×öÃ÷ÎÄ Êµ¼ÊÓ¦ÊÇ½»Ò×ĞÅÏ¢
+    sign(rsaSign, signature, std::to_string(publicKey));
+    cout << "public key: " << std::to_string(publicKey) << endl
+        << "signature:" << signature << endl << endl;
 
 
-    Rsa rsa1,rsa2;
-    BigInt c,m,s,pr;
-    int pu=0;
+    cout << "verify public key with correspondent signature" << endl;
 
-    int n=128;
-    rsa1.init(n/2);
+    // Ç©ÃûÑéÖ¤CheckSigÖ÷Òª²¿·Ö
+    Rsa rsaVerify; //rsa¶ÔÏó£¬ÓÃÓÚÑéÖ¤Ç©Ãû
 
-    cout << "è¯·è¾“å…¥å…¬é’¥ï¼š" << endl;
-    cin >> pu ;
-    rsa1.setPu(pu);
-    pr=rsa1.showPr();
-    cout << "ç§é’¥ä¸º: " << pr << endl;
-    // rsa1.showPQ(p,q);
-    // cout << "pqä¸º: " << '(' << p << ',' << q << ')' << endl;
+    rsaVerify.init(0); //³õÊ¼»¯
+    cout << "known public key: "<< publicKey << "   signature: " << signature << endl;
 
-    cout<<"Ö¤ä½¿ç”¨ç§é’¥ç­¾åå¹¶éªŒè¯"<<endl;
-    sign(rsa1,s, std::to_string(pu));//è¿™é‡Œçš„ç¬¬ä¸‰ä¸ªå‚æ•°æ˜¯è¢«ç­¾åçš„å­—ç¬¦ä¸²
-    verify(rsa1, s, std::to_string(pu));
+    rsaVerify.setPu(publicKey);
 
-
-    cout<<"Ö¤å¯¹å·²çŸ¥å…¬é’¥å¯¹åº”çš„ç­¾åè¿›è¡ŒéªŒè¯"<<endl;
-    rsa2.init(n/2);
-    rsa2.setPu(pu);
-
-    BigInt ss("22308B989987AEE01DED1BAC4C84497F");
-
-    bool flag = verify(rsa2, ss, std::to_string(pu));
-    cout<<"result of verification:"<<flag<<endl;
-
-
-    BigInt encryptMSG = rsa2.encryptByPr(ss);
-    cout<<"å¯¹æ˜æ–‡("<<ss<<")ç”¨å…¬é’¥åŠ å¯†çš„ç»“æœä¸º:"<<encryptMSG<<endl;
-
-    BigInt decodeMSG = rsa2.decodeByPu(encryptMSG);
-
-    cout<<"å¯¹å¯†æ–‡("<<encryptMSG<<")ç”¨ç§é’¥è§£å¯†çš„ç»“æœä¸º:"<<decodeMSG<<endl;
-
-
+    // Êı×ÖÇ©ÃûÑéÖ¤Ê¹ÓÃÖ±½ÓÊ¹ÓÃ¹«Ô¿£¬¶ÔÃ÷ÎÄ½øĞĞÑéÖ¤
+    bool flag = verify(rsaVerify, signature, std::to_string(publicKey));
+    cout << "result of verification:" << flag << endl;
 
     return 0;
-
 }
 
