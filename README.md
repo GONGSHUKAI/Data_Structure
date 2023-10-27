@@ -21,4 +21,4 @@ Depth-First Search, Stack-based recursion.
 ### Oct.8_Lab: Block Chain 1
 I/O stream, organize transactions into Linked-Lists, spotting invalid transactions.
 ### Oct.13_Lab: Block Chain 2
-Hash, Stack-based smart contracts
+Hash, public key encryption, signature, Stack-based smart contracts
