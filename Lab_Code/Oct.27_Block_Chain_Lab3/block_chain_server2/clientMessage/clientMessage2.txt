@@ -1,0 +1,13 @@
+Transaction Request
+transaction0info
+0
+bb171757a76cd2c95b6ccdc633ef8b2f8f6491aaa7ff736ef35dd372e64a7702
+0
+1
+1
+
+output0info
+bb171757a76cd2c95b6ccdc633ef8b2f8f6491aaa7ff736ef35dd372e64a7702
+0
+100000000
+P2PKH OP_DUP OP_HASH160 11dbe48cc6b617f9c6adaf4d9ed5f625b1c7cb59 
