@@ -1,0 +1,8 @@
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
+\PYG{+w}{  }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n+nf}{getRandom}\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{start}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{end}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{      }\PYG{n}{random\PYGZus{}device}\PYG{+w}{ }\PYG{n}{rd}\PYG{p}{;}
+\PYG{+w}{      }\PYG{n}{mt19937}\PYG{+w}{ }\PYG{n}{gen}\PYG{p}{(}\PYG{n}{rd}\PYG{p}{());}
+\PYG{+w}{      }\PYG{n}{uniform\PYGZus{}int\PYGZus{}distribution}\PYG{o}{\PYGZlt{}\PYGZgt{}}\PYG{+w}{ }\PYG{n}{dis}\PYG{p}{(}\PYG{n}{start}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{end}\PYG{p}{);}
+\PYG{+w}{      }\PYG{k}{return}\PYG{+w}{ }\PYG{n}{dis}\PYG{p}{(}\PYG{n}{gen}\PYG{p}{);}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{}}
+\end{Verbatim}

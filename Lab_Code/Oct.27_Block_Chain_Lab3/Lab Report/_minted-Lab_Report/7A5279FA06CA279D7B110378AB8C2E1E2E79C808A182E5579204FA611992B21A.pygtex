@@ -1,0 +1,25 @@
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
+\PYG{+w}{  }\PYG{n}{queue}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{n}{string}\PYG{o}{\PYGZgt{}}\PYG{+w}{ }\PYG{n}{getTxtFileNames}\PYG{p}{(}\PYG{k}{const}\PYG{+w}{ }\PYG{n}{string}\PYG{o}{\PYGZam{}}\PYG{+w}{ }\PYG{n}{folderPath}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{map}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{n}{string}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{bool}\PYG{o}{\PYGZgt{}\PYGZam{}}\PYG{+w}{ }\PYG{n}{processedFiles}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{      }\PYG{n}{queue}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{n}{string}\PYG{o}{\PYGZgt{}}\PYG{+w}{ }\PYG{n}{fileQueue}\PYG{p}{;}
+\PYG{+w}{      }\PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{n}{string}\PYG{o}{\PYGZgt{}}\PYG{+w}{ }\PYG{n}{sortedFileNames}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// 用于存储已排序的文件名}
+\PYG{+w}{      }\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k}{const}\PYG{+w}{ }\PYG{k}{auto}\PYG{o}{\PYGZam{}}\PYG{+w}{ }\PYG{n}{entry}\PYG{+w}{ }\PYG{o}{:}\PYG{+w}{ }\PYG{n}{std}\PYG{o}{::}\PYG{n}{\PYGZus{}\PYGZus{}fs}\PYG{o}{::}\PYG{n}{filesystem}\PYG{o}{::}\PYG{n}{directory\PYGZus{}iterator}\PYG{p}{(}\PYG{n}{folderPath}\PYG{p}{))}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{          }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{entry}\PYG{p}{.}\PYG{n}{is\PYGZus{}regular\PYGZus{}file}\PYG{p}{()}\PYG{+w}{ }\PYG{o}{\PYGZam{}\PYGZam{}}\PYG{+w}{ }\PYG{n}{entry}\PYG{p}{.}\PYG{n}{path}\PYG{p}{().}\PYG{n}{extension}\PYG{p}{()}\PYG{+w}{ }\PYG{o}{==}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}.txt\PYGZdq{}}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{              }\PYG{n}{string}\PYG{+w}{ }\PYG{n}{fileName}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{entry}\PYG{p}{.}\PYG{n}{path}\PYG{p}{().}\PYG{n}{filename}\PYG{p}{().}\PYG{n}{string}\PYG{p}{();}
+\PYG{+w}{              }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{processedFiles}\PYG{p}{.}\PYG{n}{find}\PYG{p}{(}\PYG{n}{fileName}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{==}\PYG{+w}{ }\PYG{n}{processedFiles}\PYG{p}{.}\PYG{n}{end}\PYG{p}{())}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{c+c1}{//如果文件没有进过队列(是写进来的新文件)，就将该文件的文件名入队。}
+\PYG{+w}{                  }\PYG{n}{sortedFileNames}\PYG{p}{.}\PYG{n}{push\PYGZus{}back}\PYG{p}{(}\PYG{n}{fileName}\PYG{p}{);}
+\PYG{+w}{                  }\PYG{c+c1}{//processedFiles[fileName] = true;}
+\PYG{+w}{              }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{          }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{      }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{      }\PYG{c+c1}{// 对文件名进行排序}
+\PYG{+w}{      }\PYG{n}{sort}\PYG{p}{(}\PYG{n}{sortedFileNames}\PYG{p}{.}\PYG{n}{begin}\PYG{p}{(),}\PYG{+w}{ }\PYG{n}{sortedFileNames}\PYG{p}{.}\PYG{n}{end}\PYG{p}{(),}\PYG{+w}{ }\PYG{p}{[](}\PYG{k}{const}\PYG{+w}{ }\PYG{n}{string}\PYG{o}{\PYGZam{}}\PYG{+w}{ }\PYG{n}{a}\PYG{p}{,}\PYG{+w}{ }\PYG{k}{const}\PYG{+w}{ }\PYG{n}{string}\PYG{o}{\PYGZam{}}\PYG{+w}{ }\PYG{n}{b}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{          }\PYG{k}{return}\PYG{+w}{ }\PYG{n}{a}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{b}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// 按照ASCII码升序排序}
+\PYG{+w}{      }\PYG{p}{\PYGZcb{});}
+
+\PYG{+w}{      }\PYG{c+c1}{// 将排序后的文件名入队列}
+\PYG{+w}{      }\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k}{const}\PYG{+w}{ }\PYG{k}{auto}\PYG{o}{\PYGZam{}}\PYG{+w}{ }\PYG{n}{fileName}\PYG{+w}{ }\PYG{o}{:}\PYG{+w}{ }\PYG{n}{sortedFileNames}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{          }\PYG{n}{fileQueue}\PYG{p}{.}\PYG{n}{push}\PYG{p}{(}\PYG{n}{fileName}\PYG{p}{);}
+\PYG{+w}{      }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{      }\PYG{k}{return}\PYG{+w}{ }\PYG{n}{fileQueue}\PYG{p}{;}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{}}
+\end{Verbatim}

@@ -1,0 +1,36 @@
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
+\PYG{+w}{  }\PYG{k}{while}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{      }\PYG{k}{if}\PYG{p}{(}\PYG{n}{中奖}\PYG{p}{)\PYGZob{}}\PYG{+w}{ }\PYG{c+c1}{//中奖调用一个随机数来实现, 中奖几率在0.01\PYGZhy{}0.1之间}
+\PYG{+w}{          }\PYG{n}{从}\PYG{err}{“}\PYG{n}{交易池}\PYG{err}{”}\PYG{n}{中取出n}\PYG{+w}{ }\PYG{p}{(}\PYG{o}{\PYGZgt{}=}\PYG{l+m+mi}{1}\PYG{p}{)}\PYG{n}{个交易}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{组成一个区块newBLK}\PYG{err}{。}
+\PYG{+w}{          }\PYG{n}{newBLK的prevHash等于本节点区块链表最后一个区块lastBLK的hash值}\PYG{err}{。}
+\PYG{+w}{          }\PYG{n}{newBLK的hash值可以采用一个随机函数来生成}\PYG{p}{;}
+\PYG{+w}{          }\PYG{n}{height值为lastBLK的height}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{;}
+\PYG{+w}{          }\PYG{n}{merkleRoot和nonce都为空}\PYG{err}{。}\PYG{n}{newBLK中的交易集合由上述n个交易构成}\PYG{err}{。}
+\PYG{+w}{          }\PYG{n}{将newBLK插入本节点的区块链表末尾}\PYG{err}{。}
+\PYG{+w}{          }\PYG{n}{将newBLK以某个格式组成字符串}\PYG{err}{“}\PYG{n}{发送}\PYG{err}{”}\PYG{n}{给另一个区块链节点的}\PYG{err}{“}\PYG{n}{区块消息队列}\PYG{err}{”。}
+\PYG{+w}{      }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{      }\PYG{k}{else}\PYG{p}{\PYGZob{}}\PYG{+w}{ }\PYG{c+c1}{//没有中奖}
+\PYG{+w}{          }\PYG{k}{if}\PYG{p}{(}\PYG{err}{“}\PYG{n}{区块消息队列}\PYG{err}{”}\PYG{n}{不为空}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{              }\PYG{n}{从}\PYG{err}{“}\PYG{n}{区块消息队列}\PYG{err}{”}\PYG{n}{头部取出一个消息}\PYG{p}{(}\PYG{n}{内容为区块}\PYG{p}{)}
+\PYG{+w}{              }\PYG{n}{判断该区块是否与已有区块冲突}\PYG{p}{(}\PYG{n}{即是否存在一个区块}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{与新区块的preHash相同}\PYG{err}{。}\PYG{p}{)}
+\PYG{+w}{              }\PYG{k}{if}\PYG{p}{(}\PYG{n}{冲突}\PYG{p}{)}\PYG{+w}{ }\PYG{n}{丢弃该区块}\PYG{err}{；}
+\PYG{+w}{              }\PYG{k}{else}\PYG{p}{\PYGZob{}}
+\PYG{+w}{                  }\PYG{n}{将该区块插入到本节点区块链表末尾}\PYG{err}{；}
+\PYG{+w}{                  }\PYG{n}{从}\PYG{err}{“}\PYG{n}{交易池}\PYG{err}{”}\PYG{n}{中删除该区块中包含的交易}\PYG{err}{；}
+\PYG{+w}{              }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{          }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{          }\PYG{k}{else}\PYG{p}{\PYGZob{}}\PYG{+w}{ }\PYG{c+c1}{//“区块消息队列”为空}
+\PYG{+w}{              }\PYG{n}{从}\PYG{err}{“}\PYG{n}{客户消息队列}\PYG{err}{”}\PYG{n}{头部取出一个消息MSG}\PYG{p}{;}
+\PYG{+w}{              }\PYG{k}{if}\PYG{p}{(}\PYG{n}{MSG}\PYG{+w}{ }\PYG{n}{是交易}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{                  }\PYG{k}{if}\PYG{p}{(}\PYG{err}{“}\PYG{n}{交易池}\PYG{err}{”}\PYG{n}{不包含该交易}\PYG{p}{)}\PYG{+w}{  }\PYG{n}{将该交易加入}\PYG{err}{“}\PYG{n}{交易池}\PYG{err}{”；}
+\PYG{+w}{                  }\PYG{k}{else}\PYG{+w}{  }\PYG{n}{丢弃该交易}\PYG{err}{；}
+\PYG{+w}{              }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{              }\PYG{k}{else}\PYG{+w}{ }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{MSG}\PYG{+w}{ }\PYG{n}{是查询}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{                      }\PYG{n}{在本节点维护的区块链表中执行查询}\PYG{err}{；}
+\PYG{+w}{                      }\PYG{n}{将查询结果输出在屏幕上}\PYG{err}{；}
+\PYG{+w}{              }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{          }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{      }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{      }\PYG{n}{Sleep}\PYG{p}{(}\PYG{l+m+mi}{5}\PYG{+w}{ }\PYG{n}{seconds}\PYG{p}{);}\PYG{c+c1}{//休眠5秒}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{}}
+\end{Verbatim}

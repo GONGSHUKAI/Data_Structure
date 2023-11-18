@@ -300,26 +300,33 @@ void FileToOutput(block *currentBlock){
 void BlockInfo(int height, block *firstblock){
     //输入区块高度，输出该区块内容
     block *p = firstblock;
-    while (height != p->height && p != nullptr){
-        p = p->next;
+    while (p != nullptr){
+        if (p->height == height) break;
+        else p = p->next;
     }//找到height值对应的block
-    cout << "Block Height: " << p->height << endl;
-    cout << "Block Hash: " << p->hash << endl;
-    cout << "Block prevHash: " << p->prevHash << endl;
-    cout << "Block merkleRoot: " << p->merkleRoot << endl;
-    cout << "Block nonce: " << p->nonce << endl;
-    int i = 0;
-    cout << endl;
-    while (p->transactions[i].txid != ""){
-        cout << "Block Transaction " << i << " txid: " << (p->transactions[i]).txid << endl;
-        cout << "Block Transaction " << i << " input count: " << (p->transactions[i]).input_count << endl;
-        cout << "Block Transaction " << i << " output count: " << (p->transactions[i]).output_count << endl;
-        cout << "Block Transaction " << i << " Coinbase: " << (p->transactions[i]).is_coinbase << endl;
-        TransactionInfo(p->transactions[i].txid, firstblock, nullptr);
-        cout << endl;
-        i++;
+    if (p == nullptr){
+        cout << "Block Not Found!" << endl;
+        return;
     }
-    cout << endl;
+    else{
+        cout << "Block Height: " << p->height << endl;
+        cout << "Block Hash: " << p->hash << endl;
+        cout << "Block prevHash: " << p->prevHash << endl;
+        cout << "Block merkleRoot: " << p->merkleRoot << endl;
+        cout << "Block nonce: " << p->nonce << endl;
+        int i = 0;
+        cout << endl;
+        while (p->transactions[i].txid != ""){
+            cout << "Block Transaction " << i << " txid: " << (p->transactions[i]).txid << endl;
+            cout << "Block Transaction " << i << " input count: " << (p->transactions[i]).input_count << endl;
+            cout << "Block Transaction " << i << " output count: " << (p->transactions[i]).output_count << endl;
+            cout << "Block Transaction " << i << " Coinbase: " << (p->transactions[i]).is_coinbase << endl;
+            TransactionInfo(p->transactions[i].txid, firstblock, nullptr);
+            cout << endl;
+            i++;
+        }
+        cout << endl;
+    }
 }
 
 int BlocksLength(block *firstblock){

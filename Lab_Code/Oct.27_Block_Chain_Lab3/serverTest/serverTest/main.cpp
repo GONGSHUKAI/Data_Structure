@@ -39,7 +39,7 @@ bool isWinner(){//假设中奖概率为0.05
 queue <string> getTxtFileNames(const string& folderPath, map <string, bool>& processedFiles) {
     queue <string> fileQueue;
     vector<string> sortedFileNames; // 用于存储已排序的文件名
-    for (const auto& entry : filesystem::directory_iterator(folderPath)) {
+    for (const auto& entry : std::__fs::filesystem::directory_iterator(folderPath)) {
         if (entry.is_regular_file() && entry.path().extension() == ".txt") {
             string fileName = entry.path().filename().string();
             if (processedFiles.find(fileName) == processedFiles.end()) {//如果文件没有进过队列(是写进来的新文件)，就将该文件的文件名入队。
@@ -63,10 +63,10 @@ queue <string> getTxtFileNames(const string& folderPath, map <string, bool>& pro
 block* InitServerBlock(){
     block* head = new block;
     head->height = 0;//区块高度
-    head->hash = "";//本区块的哈希值
+    head->hash = "7c5b79677777cc627166cabbc347679b6469749c7cbb7b19617f6c3674c4c3bb";//自定义的头结点的hash
     head->prevHash = "";//前一个区块的哈希值
-    head->merkleRoot = "";//本区块中所有交易的默克尔树根
-    head->nonce = 0;//神秘数
+    head->merkleRoot = "229accb4c760c7c57e7c769e4afce7e434c26757472c281277ceeb36618b2cc5";//本区块中所有交易的默克尔树根
+    head->nonce = 114514;//神秘数
     head->next = nullptr;
     return head;//返回节点1的区块链的头结点
 }
@@ -217,6 +217,7 @@ block* recoverBlock(string fileName) {//根据blockMSG.text文件复原一个blo
         istringstream blockNonce(line);
         blockNonce >> recoverBLK->nonce;
 
+        recoverBLK->next = nullptr;
         // Skip empty line
         getline(inputFile, line);
 
@@ -422,7 +423,7 @@ int main(){
                 string firstBlockMSG = blockMessageQueue.front();//从“区块消息队列”头部取出一个消息（内容为区块）
                 blockMessageQueue.pop();
                 processedFiles2[firstBlockMSG] = true;//将此区块消息标记为被处理过
-                string filePath_BMSG = "block_chain_server1/blockMessage/"+firstBlockMSG;
+                string filePath_BMSG = "/Users/gongshukai/Desktop/SCHOOL WORK/SOPHOMORE SEM1/DATA STRUCTURE  & ALGORITHM /SLIDES & HOMEWORK & LAB/LAB/Oct.27_Lab/block_chain_server1/blockMessage/"+firstBlockMSG;
                 block *firstBLK = recoverBlock(filePath_BMSG);//将该消息恢复成一个区块firstBLK
 
                 if (judgeConflictBlock(firstBLK, serverBlock)){//"冲突"则丢弃该区块

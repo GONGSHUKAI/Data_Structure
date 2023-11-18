@@ -1,0 +1,10 @@
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
+\PYG{+w}{  }\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{OP\PYGZus{}EQUALVERIFY}\PYG{p}{()\PYGZob{}}\PYG{c+c1}{//弹出栈顶两个操作数，判断它们是否相等}
+\PYG{+w}{      }\PYG{n}{std}\PYG{o}{::}\PYG{n}{string}\PYG{+w}{ }\PYG{n}{top1}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{SmartContract}\PYG{p}{.}\PYG{n}{top}\PYG{p}{();}
+\PYG{+w}{      }\PYG{n}{SmartContract}\PYG{p}{.}\PYG{n}{pop}\PYG{p}{();}
+\PYG{+w}{      }\PYG{n}{std}\PYG{o}{::}\PYG{n}{string}\PYG{+w}{ }\PYG{n}{top2}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{SmartContract}\PYG{p}{.}\PYG{n}{top}\PYG{p}{();}
+\PYG{+w}{      }\PYG{n}{SmartContract}\PYG{p}{.}\PYG{n}{pop}\PYG{p}{();}
+\PYG{+w}{      }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{top1}\PYG{+w}{ }\PYG{o}{==}\PYG{+w}{ }\PYG{n}{top2}\PYG{p}{)}\PYG{+w}{ }\PYG{n}{flag}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{p}{;}
+\PYG{+w}{      }\PYG{k}{else}\PYG{+w}{ }\PYG{n}{flag}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{}}
+\end{Verbatim}

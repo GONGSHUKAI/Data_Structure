@@ -1,0 +1,22 @@
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
+\PYG{+w}{  }\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{OP\PYGZus{}DUP}\PYG{p}{()\PYGZob{}}\PYG{c+c1}{//复制（非弹出）栈顶元素的值，并将复制的结果压入栈中}
+\PYG{+w}{      }\PYG{n}{std}\PYG{o}{::}\PYG{n}{string}\PYG{+w}{ }\PYG{n}{sig}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{SmartContract}\PYG{p}{.}\PYG{n}{top}\PYG{p}{();}\PYG{c+c1}{//先将之前压入的input的scriptSig取出}
+\PYG{+w}{      }\PYG{n}{std}\PYG{o}{::}\PYG{n}{string}\PYG{+w}{ }\PYG{n}{signature}\PYG{p}{;}
+\PYG{+w}{      }\PYG{n}{std}\PYG{o}{::}\PYG{n}{string}\PYG{+w}{ }\PYG{n}{public\PYGZus{}key}\PYG{p}{;}
+\PYG{+w}{      }\PYG{c+c1}{//将scriptSig分解为signature和public key两部分}
+\PYG{+w}{      }\PYG{k+kt}{unsigned}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{n}{pos}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{sig}\PYG{p}{.}\PYG{n}{find}\PYG{p}{(}\PYG{l+s+sc}{\PYGZsq{} \PYGZsq{}}\PYG{p}{);}
+\PYG{+w}{      }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{pos}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{n}{std}\PYG{o}{::}\PYG{n}{string}\PYG{o}{::}\PYG{n}{npos}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{      }\PYG{c+c1}{//如果没有返回一个无效的位置，即sig中存在空格(例如: 22308B989987AEE01DED1BAC4C84497F 20221009)}
+\PYG{+w}{          }\PYG{n}{signature}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{sig}\PYG{p}{.}\PYG{n}{substr}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{n}{pos}\PYG{p}{);}\PYG{c+c1}{//22308B989987AEE01DED1BAC4C84497F是signature}
+\PYG{+w}{          }\PYG{n}{public\PYGZus{}key}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{sig}\PYG{p}{.}\PYG{n}{substr}\PYG{p}{(}\PYG{n}{pos}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{sig}\PYG{p}{.}\PYG{n}{length}\PYG{p}{());}\PYG{c+c1}{//20221009是public key}
+\PYG{+w}{          }\PYG{n}{SmartContract}\PYG{p}{.}\PYG{n}{push}\PYG{p}{(}\PYG{n}{signature}\PYG{p}{);}\PYG{c+c1}{//将signature压入栈中}
+\PYG{+w}{          }\PYG{n}{SmartContract}\PYG{p}{.}\PYG{n}{push}\PYG{p}{(}\PYG{n}{public\PYGZus{}key}\PYG{p}{);}\PYG{c+c1}{//将public\PYGZus{}key压入栈中}
+\PYG{+w}{          }\PYG{n}{SmartContract}\PYG{p}{.}\PYG{n}{push}\PYG{p}{(}\PYG{n}{public\PYGZus{}key}\PYG{p}{);}\PYG{c+c1}{//将public\PYGZus{}key再压入栈中(相当于复制)}
+\PYG{+w}{      }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{      }\PYG{k}{else}\PYG{p}{\PYGZob{}}
+\PYG{+w}{      }\PYG{c+c1}{//如果返回一个无效的位置(scriptSig中根本没有空格，例如2023)}
+\PYG{+w}{          }\PYG{n}{SmartContract}\PYG{p}{.}\PYG{n}{push}\PYG{p}{(}\PYG{n}{sig}\PYG{p}{);}
+\PYG{+w}{          }\PYG{n}{SmartContract}\PYG{p}{.}\PYG{n}{push}\PYG{p}{(}\PYG{n}{sig}\PYG{p}{);}\PYG{c+c1}{//DUP指令将sig复制了一遍再压进栈}
+\PYG{+w}{      }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{}}
+\end{Verbatim}

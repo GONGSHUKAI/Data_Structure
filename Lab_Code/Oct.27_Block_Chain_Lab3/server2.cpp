@@ -63,10 +63,10 @@ queue <string> getTxtFileNames(const string& folderPath, map <string, bool>& pro
 block* InitServerBlock(){
     block* head = new block;
     head->height = 0;//区块高度
-    head->hash = "";//本区块的哈希值
+    head->hash = "7c5b79677777cc627166cabbc347679b6469749c7cbb7b19617f6c3674c4c3bb";//自定义的头结点的hash
     head->prevHash = "";//前一个区块的哈希值
-    head->merkleRoot = "";//本区块中所有交易的默克尔树根
-    head->nonce = 0;//神秘数
+    head->merkleRoot = "229accb4c760c7c57e7c769e4afce7e434c26757472c281277ceeb36618b2cc5";//本区块中所有交易的默克尔树根
+    head->nonce = 114514;//神秘数
     head->next = nullptr;
     return head;//返回节点1的区块链的头结点
 }
@@ -143,13 +143,14 @@ void sendBlockMessage(int blockMessageNumber, block* newBLK){
     }
 }
 
-bool judge_ClientMSG(string filePath){
+int judge_ClientMSG(string filePath){
     ifstream inputFile(filePath);
     string line;
     getline(inputFile, line);
 
-    if (line == "Transaction Request") return true;//考察ClientMSG.txt的第一行，看他是交易还是查询，是交易则返回true
-    else return false;
+    if (line == "Transaction Request") return 1;//考察ClientMSG.txt的第一行，看他是交易还是查询，是交易则返回true
+    else if (line == "") return 2;//文件为空，返回false
+    else return 3;
 }
 
 void inquiryServerBlock(block *serverBlock, string filePath){
@@ -159,13 +160,16 @@ void inquiryServerBlock(block *serverBlock, string filePath){
     getline(inputFile, category);// inquiry category: height/hash/txid
     getline(inputFile, content);// inquiry content: heightNumber/hash/txid
     if (category == "height"){
+        cout << "Client's inquiry height: " << content << endl;//"用户查询的区块高度为：
         int heightNumber = stoi(content);
         BlockInfo(heightNumber, serverBlock);
     }
     else if (category == "hash"){
+        cout << "Client's inquiry hash: " << content << endl;
         //Not yet developed :)
     }
     else if (category == "txid"){
+        cout << "Client's inquiry txid: " << content << endl;
         TransactionInfo(content, serverBlock, nullptr);
     }
     else cout << "Wrong inquiry category!" << endl;
@@ -217,6 +221,7 @@ block* recoverBlock(string fileName) {//根据blockMSG.text文件复原一个block recov
         istringstream blockNonce(line);
         blockNonce >> recoverBLK->nonce;
 
+        recoverBLK->next = nullptr;
         // Skip empty line
         getline(inputFile, line);
 
@@ -409,11 +414,18 @@ int main(){
             将newBLK插入本节点的区块链表末尾。
             将newBLK以某个格式（比如JSON）组成字符串“发送”给另一个区块链节点的“区块消息队列”。
             */
-            block* newBLK = createBlock(tail, 1);
-            tail->next = newBLK;
-            tail = newBLK;
-            cout << "Jackpot! A new block has been inserted to the chain!" << endl;
-            sendBlockMessage(blockMessageNumber, newBLK);
+            if (transactionPool.empty()){
+                cout << "No transaction in the transaction pool!" << endl;
+                this_thread::sleep_for(chrono::seconds(5));//隔一会儿再执行下一趟循环，避免server过载
+                continue;
+            }
+            else{
+                block* newBLK = createBlock(tail, 1);
+                tail->next = newBLK;
+                tail = newBLK;
+                cout << "Jackpot! A new block has been inserted to the chain!" << endl;
+                sendBlockMessage(blockMessageNumber, newBLK);
+            }
         }
         else{//没有中奖
             if (!blockMessageQueue.empty()){ //“区块消息队列”不为空
@@ -427,6 +439,7 @@ int main(){
 
                 if (judgeConflictBlock(firstBLK, serverBlock)){//"冲突"则丢弃该区块
                     cout << "Conflict! The block has been discarded!" << endl;
+                    delete firstBLK;
                 }
                 else{
                 //将该区块插入到本节点区块链表末尾；
@@ -447,9 +460,14 @@ int main(){
                 if (!clientMessageQueue.empty()){
                     string firstClientMSG = clientMessageQueue.front();//从“客户消息队列”头部取出一个消息MSG；
                     string filePath_CMSG = "/Users/gongshukai/Desktop/SCHOOL WORK/SOPHOMORE SEM1/DATA STRUCTURE  & ALGORITHM /SLIDES & HOMEWORK & LAB/LAB/Oct.27_Lab/block_chain_server2/clientMessage/"+firstClientMSG;
+                    //如果filePath_CMSG内容为空，执行下一趟循环
+                    if (judge_ClientMSG(filePath_CMSG) == 2){
+                        this_thread::sleep_for(chrono::seconds(5));//隔一会儿再执行下一趟循环，避免server过载
+                        continue;
+                    }
                     clientMessageQueue.pop();
                     processedFiles1[firstClientMSG] = true;//将此客户消息标记为被处理过
-                    if (judge_ClientMSG(filePath_CMSG)){//MSG 是交易
+                    if (judge_ClientMSG(filePath_CMSG) == 1){//MSG 是交易
                         cout << "Client's transaction request!" << endl;
                         transaction tsc = recover_tsc(filePath_CMSG);
                         if (!find_tsc_in_tscPool(tsc)){//“交易池”不包含该交易，将该交易加入“交易池”；
@@ -460,12 +478,13 @@ int main(){
                             cout << "The transaction has been discarded!" << endl;
                         }
                     }
-                    else{//MSG 是查询
+                    else if (judge_ClientMSG(filePath_CMSG) == 3){//MSG 是查询
                         //在本节点维护的区块链表中执行查询；
                         //将查询结果输出在屏幕上；
                         cout << "Client's inquiry request!" << endl;
                         inquiryServerBlock(serverBlock, filePath_CMSG);
                     }
+                    else{}
                 }
             }//区块消息队列为空，客户消息队列不为空
         }//中奖or没有中奖
