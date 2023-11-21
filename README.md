@@ -22,5 +22,5 @@ I/O stream, organize transactions into Linked-Lists, spotting invalid transactio
 ### Oct.13_Lab: Block Chain 2
 rsa encryption, signature, Stack-based smart contracts.
 
-### Oct.13_Lab: Block Chain 3
+### Oct.27_Lab: Block Chain 3
 A micro Block Chain transaction/inquiry system, Client-Server messaging through I/O stream.
