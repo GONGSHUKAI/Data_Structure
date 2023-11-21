@@ -1,4 +1,0 @@
-\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
-\PYG{+w}{  }\PYG{n+nl}{Output}\PYG{p}{:}\PYG{+w}{ }\PYG{n}{OP\PYGZus{}BEGIN\PYGZus{}CALC}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{l+m+mi}{2}\PYG{+w}{ }\PYG{n}{OP\PYGZus{}END\PYGZus{}CALC}\PYG{+w}{ }\PYG{n}{OP\PYGZus{}EQUALVERIFY}
-\PYG{+w}{  }\PYG{n+nl}{Input}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mi}{3}
-\end{Verbatim}

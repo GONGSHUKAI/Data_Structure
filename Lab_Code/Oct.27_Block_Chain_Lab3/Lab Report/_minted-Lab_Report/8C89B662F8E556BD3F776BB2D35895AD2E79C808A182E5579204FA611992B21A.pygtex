@@ -1,4 +1,0 @@
-\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
-\PYG{+w}{  }\PYG{n}{Output}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{OP\PYGZus{}HASH160}\PYG{+w}{ }\PYG{l+m+mi}{4389813341121533778}\PYG{+w}{ }\PYG{n}{OP\PYGZus{}EQUALVERIFY}\PYG{err}{\PYGZbs{}}\PYGZbs{}
-\PYG{+w}{  }\PYG{n+nl}{Input}\PYG{p}{:}\PYG{+w}{ }\PYG{n}{HELLOBLOCKCHAIN}
-\end{Verbatim}
