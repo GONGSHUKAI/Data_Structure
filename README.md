@@ -29,9 +29,13 @@ A micro Block Chain transaction/inquiry system, Client-Server messaging through 
 
 ### Nov.24_Lab: Huffman Tree
 Huffman tree construction (-c), encoding (-e) and decoding (-d)
+
 User should open huffman.exec in command line, the format is as follows:
+
 ./huffman -c input_file model_file 
+
 ./huffman -e input_file code_file output_file
+
 ./huffman -d input_file code_file output_file
 
 
