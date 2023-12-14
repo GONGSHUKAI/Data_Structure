@@ -38,5 +38,8 @@ User should open huffman.exec in command line, the format is as follows:
 
 ./huffman -d input_file code_file output_file
 
+### Dec.1_Lab: Block Chain Analysis
+Big data analysis of a block chain system.
 
+Information query, big data analysis, graph algorithms, shortest path, topological sorting.
 
