@@ -1,0 +1,3 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{n}{transaction}\PYG{o}{*}\PYG{+w}{ }\PYG{n+nf}{FindPrevOutput}\PYG{p}{(}\PYG{n}{string}\PYG{+w}{ }\PYG{n}{My\PYGZus{}txid}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{firstblock}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{endblock}\PYG{p}{);}
+\end{Verbatim}

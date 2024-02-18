@@ -1,0 +1,42 @@
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
+\PYG{+w}{  }\PYG{c+cp}{\PYGZsh{}define MAXTRANS 100}\PYG{c+c1}{//一个块内最高有100条交易信息}
+\PYG{+w}{  }\PYG{c+cp}{\PYGZsh{}define MAXINPUT 100}\PYG{c+c1}{//一条交易信息中最高有100个输入}
+\PYG{+w}{  }\PYG{c+cp}{\PYGZsh{}define MAXOUTPUT 100}\PYG{c+c1}{//一条交易信息中最高有100个输出}
+
+\PYG{+w}{  }\PYG{k}{typedef}\PYG{+w}{ }\PYG{k}{struct}\PYG{+w}{ }\PYG{n+nc}{output}\PYG{p}{\PYGZob{}}
+\PYG{+w}{      }\PYG{n}{string}\PYG{+w}{ }\PYG{n}{txid}\PYG{p}{;}\PYG{c+c1}{//该output所属的交易}
+\PYG{+w}{      }\PYG{k+kt}{unsigned}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{n}{index}\PYG{p}{;}\PYG{c+c1}{//该output在所属交易中的索引值}
+\PYG{+w}{      }\PYG{k+kt}{unsigned}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{n}{value}\PYG{p}{;}\PYG{c+c1}{//该output的价值(数据已乘10\PYGZca{}8,避免浮点误差)}
+\PYG{+w}{      }\PYG{n}{string}\PYG{+w}{ }\PYG{n}{script}\PYG{p}{;}\PYG{c+c1}{//脚本}
+
+\PYG{+w}{      }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{IsUse}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{NotUsed}\PYG{p}{;}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{}}\PYG{n}{output}\PYG{p}{;}
+
+\PYG{+w}{  }\PYG{k}{typedef}\PYG{+w}{ }\PYG{k}{struct}\PYG{+w}{ }\PYG{n+nc}{input}\PYG{p}{\PYGZob{}}
+\PYG{+w}{      }\PYG{k+kt}{unsigned}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{n}{pre\PYGZus{}block}\PYG{p}{;}\PYG{c+c1}{//该input所引用的output所在区块的高度}
+\PYG{+w}{      }\PYG{n}{string}\PYG{+w}{ }\PYG{n}{prevTxID}\PYG{p}{;}\PYG{c+c1}{//该input所引用的output所在交易的txID}
+\PYG{+w}{      }\PYG{k+kt}{unsigned}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{n}{prevTxOutIndex}\PYG{p}{;}\PYG{c+c1}{//该input所引用的output位于所在交易output集合中的索引}
+\PYG{+w}{      }\PYG{n}{string}\PYG{+w}{ }\PYG{n}{scriptSig}\PYG{p}{;}\PYG{c+c1}{//脚本和签名}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{}}\PYG{n}{input}\PYG{p}{;}
+
+\PYG{+w}{  }\PYG{k}{typedef}\PYG{+w}{ }\PYG{k}{struct}\PYG{+w}{ }\PYG{n+nc}{transaction}\PYG{p}{\PYGZob{}}
+\PYG{+w}{      }\PYG{n}{string}\PYG{+w}{ }\PYG{n}{txid}\PYG{p}{;}\PYG{c+c1}{//交易的编号，具有唯一性}
+\PYG{+w}{      }\PYG{k+kt}{unsigned}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{n}{input\PYGZus{}count}\PYG{p}{;}\PYG{c+c1}{//inputs的数量}
+\PYG{+w}{      }\PYG{k+kt}{unsigned}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{n}{output\PYGZus{}count}\PYG{p}{;}\PYG{c+c1}{//outputs的数量}
+\PYG{+w}{      }\PYG{n}{input}\PYG{+w}{ }\PYG{n}{inputs}\PYG{p}{[}\PYG{n}{MAXINPUT}\PYG{p}{];}\PYG{c+c1}{//一组input的集合，表示当前交易的输入所用到的输出}
+\PYG{+w}{      }\PYG{n}{output}\PYG{+w}{ }\PYG{n}{outputs}\PYG{p}{[}\PYG{n}{MAXOUTPUT}\PYG{p}{];}\PYG{c+c1}{//一组output的集合，表示当前交易的输出}
+\PYG{+w}{      }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{is\PYGZus{}coinbase}\PYG{p}{;}\PYG{c+c1}{//1为coinbase交易，0为非coinbase交易}
+
+\PYG{+w}{      }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{valid}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{yes}\PYG{p}{;}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{}}\PYG{n}{transaction}\PYG{p}{;}
+
+\PYG{+w}{  }\PYG{k}{typedef}\PYG{+w}{ }\PYG{k}{struct}\PYG{+w}{ }\PYG{n+nc}{block}\PYG{p}{\PYGZob{}}
+\PYG{+w}{      }\PYG{k+kt}{unsigned}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{n}{height}\PYG{p}{;}\PYG{c+c1}{//当前块的高度，一条链上每个区块的Height均不相同}
+\PYG{+w}{      }\PYG{n}{string}\PYG{+w}{ }\PYG{n}{hash}\PYG{p}{;}\PYG{c+c1}{//本区块的哈希值}
+\PYG{+w}{      }\PYG{n}{string}\PYG{+w}{ }\PYG{n}{prevHash}\PYG{p}{;}\PYG{c+c1}{//前一个区块的哈希值}
+\PYG{+w}{      }\PYG{n}{string}\PYG{+w}{ }\PYG{n}{merkleRoot}\PYG{p}{;}\PYG{c+c1}{//本区块中所有交易的默克尔树根}
+\PYG{+w}{      }\PYG{k+kt}{unsigned}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{n}{nonce}\PYG{p}{;}\PYG{c+c1}{//神秘数}
+\PYG{+w}{      }\PYG{n}{transaction}\PYG{+w}{ }\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{MAXTRANS}\PYG{p}{];}\PYG{c+c1}{//一组transaction的集合}
+\PYG{+w}{      }\PYG{k}{struct}\PYG{+w}{ }\PYG{n+nc}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{next}\PYG{p}{;}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{}}\PYG{n}{block}\PYG{p}{;}
+\end{Verbatim}

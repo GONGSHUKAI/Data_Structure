@@ -1,0 +1,494 @@
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
+\PYG{+w}{  }\PYG{c+cp}{\PYGZsh{}include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZlt{}iostream\PYGZgt{}}
+\PYG{+w}{  }\PYG{c+cp}{\PYGZsh{}include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZlt{}fstream\PYGZgt{}}
+\PYG{+w}{  }\PYG{c+cp}{\PYGZsh{}include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZlt{}sstream\PYGZgt{}}
+\PYG{+w}{  }\PYG{c+cp}{\PYGZsh{}include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZlt{}string\PYGZgt{}}
+\PYG{+w}{  }\PYG{c+cp}{\PYGZsh{}include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZlt{}ctime\PYGZgt{}}
+\PYG{+w}{  }\PYG{c+cp}{\PYGZsh{}define yes 100}
+\PYG{+w}{  }\PYG{c+cp}{\PYGZsh{}define no \PYGZhy{}100}
+\PYG{+w}{  }\PYG{c+cp}{\PYGZsh{}define NotUsed 200}
+\PYG{+w}{  }\PYG{c+cp}{\PYGZsh{}define Used \PYGZhy{}200}
+\PYG{+w}{  }\PYG{c+cp}{\PYGZsh{}define TransactionExist 999}
+
+\PYG{+w}{  }\PYG{c+cp}{\PYGZsh{}define MAXTRANS 100}\PYG{c+c1}{//一个块内最高有100条交易信息}
+\PYG{+w}{  }\PYG{c+cp}{\PYGZsh{}define MAXINPUT 100}\PYG{c+c1}{//一条交易信息中最高有100个输入}
+\PYG{+w}{  }\PYG{c+cp}{\PYGZsh{}define MAXOUTPUT 100}\PYG{c+c1}{//一条交易信息中最高有100个输出}
+\PYG{+w}{  }\PYG{k}{using}\PYG{+w}{ }\PYG{k}{namespace}\PYG{+w}{ }\PYG{n+nn}{std}\PYG{p}{;}
+
+\PYG{+w}{  }\PYG{k}{typedef}\PYG{+w}{ }\PYG{k}{struct}\PYG{+w}{ }\PYG{n+nc}{output}\PYG{p}{\PYGZob{}}
+\PYG{+w}{      }\PYG{n}{string}\PYG{+w}{ }\PYG{n}{txid}\PYG{p}{;}\PYG{c+c1}{//该output所属的交易}
+\PYG{+w}{      }\PYG{k+kt}{unsigned}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{n}{index}\PYG{p}{;}\PYG{c+c1}{//该output在所属交易中的索引值}
+\PYG{+w}{      }\PYG{k+kt}{unsigned}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{n}{value}\PYG{p}{;}\PYG{c+c1}{//该output的价值(数据已乘10\PYGZca{}8,避免浮点误差)}
+\PYG{+w}{      }\PYG{n}{string}\PYG{+w}{ }\PYG{n}{script}\PYG{p}{;}\PYG{c+c1}{//脚本}
+
+\PYG{+w}{      }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{IsUse}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{NotUsed}\PYG{p}{;}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{}}\PYG{n}{output}\PYG{p}{;}
+
+\PYG{+w}{  }\PYG{k}{typedef}\PYG{+w}{ }\PYG{k}{struct}\PYG{+w}{ }\PYG{n+nc}{input}\PYG{p}{\PYGZob{}}
+\PYG{+w}{      }\PYG{k+kt}{unsigned}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{n}{pre\PYGZus{}block}\PYG{p}{;}\PYG{c+c1}{//该input所引用的output所在区块的高度}
+\PYG{+w}{      }\PYG{n}{string}\PYG{+w}{ }\PYG{n}{prevTxID}\PYG{p}{;}\PYG{c+c1}{//该input所引用的output所在交易的txID}
+\PYG{+w}{      }\PYG{k+kt}{unsigned}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{n}{prevTxOutIndex}\PYG{p}{;}\PYG{c+c1}{//该input所引用的output位于所在交易output集合中的索引}
+\PYG{+w}{      }\PYG{n}{string}\PYG{+w}{ }\PYG{n}{scriptSig}\PYG{p}{;}\PYG{c+c1}{//脚本和签名}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{}}\PYG{n}{input}\PYG{p}{;}
+
+\PYG{+w}{  }\PYG{k}{typedef}\PYG{+w}{ }\PYG{k}{struct}\PYG{+w}{ }\PYG{n+nc}{transaction}\PYG{p}{\PYGZob{}}
+\PYG{+w}{      }\PYG{n}{string}\PYG{+w}{ }\PYG{n}{txid}\PYG{p}{;}\PYG{c+c1}{//交易的编号，具有唯一性}
+\PYG{+w}{      }\PYG{k+kt}{unsigned}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{n}{input\PYGZus{}count}\PYG{p}{;}\PYG{c+c1}{//inputs的数量}
+\PYG{+w}{      }\PYG{k+kt}{unsigned}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{n}{output\PYGZus{}count}\PYG{p}{;}\PYG{c+c1}{//outputs的数量}
+\PYG{+w}{      }\PYG{n}{input}\PYG{+w}{ }\PYG{n}{inputs}\PYG{p}{[}\PYG{n}{MAXINPUT}\PYG{p}{];}\PYG{c+c1}{//一组input的集合，表示当前交易的输入所用到的输出}
+\PYG{+w}{      }\PYG{n}{output}\PYG{+w}{ }\PYG{n}{outputs}\PYG{p}{[}\PYG{n}{MAXOUTPUT}\PYG{p}{];}\PYG{c+c1}{//一组output的集合，表示当前交易的输出}
+\PYG{+w}{      }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{is\PYGZus{}coinbase}\PYG{p}{;}\PYG{c+c1}{//1为coinbase交易，0为非coinbase交易}
+
+\PYG{+w}{      }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{valid}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{yes}\PYG{p}{;}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{}}\PYG{n}{transaction}\PYG{p}{;}
+
+\PYG{+w}{  }\PYG{k}{typedef}\PYG{+w}{ }\PYG{k}{struct}\PYG{+w}{ }\PYG{n+nc}{block}\PYG{p}{\PYGZob{}}
+\PYG{+w}{      }\PYG{k+kt}{unsigned}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{n}{height}\PYG{p}{;}\PYG{c+c1}{//当前块的高度，一条链上每个区块的Height均不相同}
+\PYG{+w}{      }\PYG{n}{string}\PYG{+w}{ }\PYG{n}{hash}\PYG{p}{;}\PYG{c+c1}{//本区块的哈希值}
+\PYG{+w}{      }\PYG{n}{string}\PYG{+w}{ }\PYG{n}{prevHash}\PYG{p}{;}\PYG{c+c1}{//前一个区块的哈希值}
+\PYG{+w}{      }\PYG{n}{string}\PYG{+w}{ }\PYG{n}{merkleRoot}\PYG{p}{;}\PYG{c+c1}{//本区块中所有交易的默克尔树根}
+\PYG{+w}{      }\PYG{k+kt}{unsigned}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{k+kt}{long}\PYG{+w}{ }\PYG{n}{nonce}\PYG{p}{;}\PYG{c+c1}{//神秘数}
+\PYG{+w}{      }\PYG{n}{transaction}\PYG{+w}{ }\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{MAXTRANS}\PYG{p}{];}\PYG{c+c1}{//一组transaction的集合}
+
+\PYG{+w}{      }\PYG{k}{struct}\PYG{+w}{ }\PYG{n+nc}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{next}\PYG{p}{;}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{}}\PYG{n}{block}\PYG{p}{;}
+
+\PYG{+w}{  }\PYG{n}{block}\PYG{o}{*}\PYG{+w}{ }\PYG{n+nf}{FileToBlock}\PYG{p}{();}
+\PYG{+w}{  }\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{FileToTransaction}\PYG{p}{(}\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{currentBlock}\PYG{p}{);}
+\PYG{+w}{  }\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{FileToInput}\PYG{p}{(}\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{currentBlock}\PYG{p}{);}
+\PYG{+w}{  }\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{FileToOutput}\PYG{p}{(}\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{currentBlock}\PYG{p}{);}
+\PYG{+w}{  }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n+nf}{BlocksLength}\PYG{p}{(}\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{firstblock}\PYG{p}{);}
+\PYG{+w}{  }\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{BlockInfo}\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{height}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{firstblock}\PYG{p}{);}
+\PYG{+w}{  }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n+nf}{TransactionInfo}\PYG{p}{(}\PYG{n}{string}\PYG{+w}{ }\PYG{n}{txid}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{firstblock}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{endblock}\PYG{p}{);}
+\PYG{+w}{  }\PYG{n}{block}\PYG{o}{*}\PYG{+w}{ }\PYG{n+nf}{InitBlockChain}\PYG{p}{();}
+\PYG{+w}{  }\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{CheckValidTransaction}\PYG{p}{(}\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{firstblock}\PYG{p}{);}
+\PYG{+w}{  }\PYG{k+kt}{bool}\PYG{+w}{ }\PYG{n+nf}{IOCheck}\PYG{p}{(}\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{firstblock}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{currentblock}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{transaction}\PYG{+w}{ }\PYG{n}{t}\PYG{p}{);}
+\PYG{+w}{  }\PYG{n}{transaction}\PYG{o}{*}\PYG{+w}{ }\PYG{n+nf}{FindPrevOutput}\PYG{p}{(}\PYG{n}{string}\PYG{+w}{ }\PYG{n}{My\PYGZus{}txid}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{firstblock}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{endblock}\PYG{p}{);}
+
+\PYG{+w}{  }\PYG{n}{block}\PYG{o}{*}\PYG{+w}{ }\PYG{n+nf}{FileToBlock}\PYG{p}{()}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{      }\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{firstBlock}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{new}\PYG{+w}{ }\PYG{n}{block}\PYG{p}{;}
+\PYG{+w}{      }\PYG{n}{ifstream}\PYG{+w}{ }\PYG{n}{file}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}2009data/blocks.csv\PYGZdq{}}\PYG{p}{);}\PYG{+w}{ }\PYG{c+c1}{//打开CSV文件}
+\PYG{+w}{      }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{o}{!}\PYG{n}{file}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{          }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}无法打开文件\PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{          }\PYG{k}{return}\PYG{+w}{ }\PYG{k}{nullptr}\PYG{p}{;}
+\PYG{+w}{      }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{      }\PYG{n}{string}\PYG{+w}{ }\PYG{n}{line}\PYG{p}{;}
+\PYG{+w}{      }\PYG{n}{getline}\PYG{p}{(}\PYG{n}{file}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{line}\PYG{p}{);}\PYG{+w}{ }\PYG{c+c1}{// 读取第一行标题（忽略）}
+\PYG{+w}{      }\PYG{c+cm}{/*getline 函数返回一个布尔值，表示是否成功读取一行内容。}
+\PYG{c+cm}{      如果读取成功，则返回true；}
+\PYG{c+cm}{      如果已到达文件末尾或发生错误，则返回false。*/}
+\PYG{+w}{      }\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{currentBlock}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{nullptr}\PYG{p}{;}
+\PYG{+w}{      }\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{prevBlock}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{nullptr}\PYG{p}{;}
+\PYG{+w}{      }\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{getline}\PYG{p}{(}\PYG{n}{file}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{line}\PYG{p}{))}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{          }\PYG{n}{stringstream}\PYG{+w}{ }\PYG{n}{ss}\PYG{p}{(}\PYG{n}{line}\PYG{p}{);}\PYG{c+c1}{//创建一个stringstream 对象，字符串ss作为初始输入。}
+\PYG{+w}{          }\PYG{n}{string}\PYG{+w}{ }\PYG{n}{cell}\PYG{p}{;}
+\PYG{+w}{          }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{column}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{          }\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{newBlock}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{new}\PYG{+w}{ }\PYG{n}{block}\PYG{p}{();}\PYG{c+c1}{// 创建新的 block}
+
+\PYG{+w}{          }\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{getline}\PYG{p}{(}\PYG{n}{ss}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{cell}\PYG{p}{,}\PYG{+w}{ }\PYG{l+s+sc}{\PYGZsq{},\PYGZsq{}}\PYG{p}{))\PYGZob{}}
+\PYG{+w}{          }\PYG{c+c1}{//使用逗号作为分隔符，从ss中提取每个字段的内容，并将其存储到字符串变量cell中}
+\PYG{+w}{              }\PYG{k}{switch}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{column}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                  }\PYG{k}{case}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{o}{:}
+\PYG{+w}{                      }\PYG{n}{newBlock}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{height}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{stoull}\PYG{p}{(}\PYG{n}{cell}\PYG{p}{);}\PYG{c+c1}{//stoi函数将字符串cell转换为unsigned long long}
+\PYG{+w}{                      }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{k}{case}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{o}{:}
+\PYG{+w}{                      }\PYG{n}{newBlock}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{hash}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cell}\PYG{p}{;}
+\PYG{+w}{                      }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{k}{case}\PYG{+w}{ }\PYG{l+m+mi}{2}\PYG{o}{:}
+\PYG{+w}{                      }\PYG{n}{newBlock}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{prevHash}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cell}\PYG{p}{;}
+\PYG{+w}{                      }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{k}{case}\PYG{+w}{ }\PYG{l+m+mi}{3}\PYG{o}{:}
+\PYG{+w}{                      }\PYG{n}{newBlock}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{merkleRoot}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cell}\PYG{p}{;}
+\PYG{+w}{                      }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{k}{case}\PYG{+w}{ }\PYG{l+m+mi}{4}\PYG{o}{:}
+\PYG{+w}{                      }\PYG{n}{newBlock}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{nonce}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{stoull}\PYG{p}{(}\PYG{n}{cell}\PYG{p}{);}
+\PYG{+w}{                      }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{k}{default}\PYG{o}{:}\PYG{c+c1}{//当没有匹配到任何 case 标签时执行的代码块。}
+\PYG{+w}{                      }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{              }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{              }\PYG{n}{column}\PYG{o}{++}\PYG{p}{;}
+\PYG{+w}{          }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{          }\PYG{c+c1}{// 如果是第一个 block，则将其设置为第一个 block}
+\PYG{+w}{          }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{prevBlock}\PYG{+w}{ }\PYG{o}{==}\PYG{+w}{ }\PYG{k}{nullptr}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{              }\PYG{n}{firstBlock}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{newBlock}\PYG{p}{;}
+\PYG{+w}{              }\PYG{n}{currentBlock}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{newBlock}\PYG{p}{;}
+\PYG{+w}{          }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{else}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{              }\PYG{n}{prevBlock}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{next}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{newBlock}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// 将前一个 block 的 next 指针指向新的 block}
+\PYG{+w}{              }\PYG{n}{newBlock}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{next}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{nullptr}\PYG{p}{;}
+\PYG{+w}{              }\PYG{n}{currentBlock}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{newBlock}\PYG{p}{;}
+\PYG{+w}{          }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{          }\PYG{n}{prevBlock}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{currentBlock}\PYG{p}{;}
+\PYG{+w}{      }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{      }\PYG{n}{file}\PYG{p}{.}\PYG{n}{close}\PYG{p}{();}\PYG{+w}{ }\PYG{c+c1}{// 关闭文件}
+\PYG{+w}{      }\PYG{k}{return}\PYG{+w}{ }\PYG{n}{firstBlock}\PYG{p}{;}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{  }\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{FileToTransaction}\PYG{p}{(}\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{currentBlock}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{      }\PYG{n}{ifstream}\PYG{+w}{ }\PYG{n}{file}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}2009data/transactions.csv\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{      }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{o}{!}\PYG{n}{file}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{          }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}无法打开文件\PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{          }\PYG{k}{return}\PYG{p}{;}
+\PYG{+w}{      }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{      }\PYG{n}{string}\PYG{+w}{ }\PYG{n}{line}\PYG{p}{;}
+\PYG{+w}{      }\PYG{n}{getline}\PYG{p}{(}\PYG{n}{file}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{line}\PYG{p}{);}
+\PYG{+w}{      }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{transIndex}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+
+\PYG{+w}{      }\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{getline}\PYG{p}{(}\PYG{n}{file}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{line}\PYG{p}{))}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{          }\PYG{n}{stringstream}\PYG{+w}{ }\PYG{n}{ss}\PYG{p}{(}\PYG{n}{line}\PYG{p}{);}
+\PYG{+w}{          }\PYG{n}{string}\PYG{+w}{ }\PYG{n}{cell}\PYG{p}{;}
+\PYG{+w}{          }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{column}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{          }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{transHeight}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{          }\PYG{n}{transaction}\PYG{+w}{ }\PYG{n}{currentTrans}\PYG{p}{;}
+\PYG{+w}{          }\PYG{n}{currentTrans}\PYG{p}{.}\PYG{n}{valid}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{yes}\PYG{p}{;}
+\PYG{+w}{          }\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{getline}\PYG{p}{(}\PYG{n}{ss}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{cell}\PYG{p}{,}\PYG{+w}{ }\PYG{l+s+sc}{\PYGZsq{},\PYGZsq{}}\PYG{p}{))}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{c+c1}{//扫描一行的数据，以逗号为分隔符}
+\PYG{+w}{              }\PYG{k}{switch}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{column}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                  }\PYG{k}{case}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{o}{:}
+\PYG{+w}{                      }\PYG{n}{transHeight}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{stoull}\PYG{p}{(}\PYG{n}{cell}\PYG{p}{);}
+\PYG{+w}{                      }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{k}{case}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{o}{:}
+\PYG{+w}{                      }\PYG{n}{currentTrans}\PYG{p}{.}\PYG{n}{txid}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cell}\PYG{p}{;}
+\PYG{+w}{                      }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{k}{case}\PYG{+w}{ }\PYG{l+m+mi}{2}\PYG{o}{:}
+\PYG{+w}{                      }\PYG{n}{currentTrans}\PYG{p}{.}\PYG{n}{is\PYGZus{}coinbase}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{stoi}\PYG{p}{(}\PYG{n}{cell}\PYG{p}{);}
+\PYG{+w}{                      }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{k}{case}\PYG{+w}{ }\PYG{l+m+mi}{3}\PYG{o}{:}
+\PYG{+w}{                      }\PYG{n}{currentTrans}\PYG{p}{.}\PYG{n}{input\PYGZus{}count}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{stoull}\PYG{p}{(}\PYG{n}{cell}\PYG{p}{);}
+\PYG{+w}{                      }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{k}{case}\PYG{+w}{ }\PYG{l+m+mi}{4}\PYG{o}{:}
+\PYG{+w}{                      }\PYG{n}{currentTrans}\PYG{p}{.}\PYG{n}{output\PYGZus{}count}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{stoull}\PYG{p}{(}\PYG{n}{cell}\PYG{p}{);}
+\PYG{+w}{                      }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{k}{default}\PYG{o}{:}
+\PYG{+w}{                      }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{              }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{              }\PYG{n}{column}\PYG{o}{++}\PYG{p}{;}
+\PYG{+w}{          }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{          }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{transHeight}\PYG{+w}{ }\PYG{o}{==}\PYG{+w}{ }\PYG{n}{currentBlock}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{height}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{              }\PYG{n}{currentBlock}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{transIndex}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{currentTrans}\PYG{p}{;}
+\PYG{+w}{              }\PYG{n}{transIndex}\PYG{o}{++}\PYG{p}{;}
+\PYG{+w}{          }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{          }\PYG{k}{else}\PYG{p}{\PYGZob{}}
+\PYG{+w}{              }\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{currentBlock}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{height}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{n}{transHeight}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{                  }\PYG{n}{currentBlock}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{currentBlock}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{next}\PYG{p}{;}
+\PYG{+w}{              }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{              }\PYG{n}{transIndex}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{              }\PYG{n}{currentBlock}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{transIndex}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{currentTrans}\PYG{p}{;}
+\PYG{+w}{              }\PYG{n}{transIndex}\PYG{o}{++}\PYG{p}{;}
+\PYG{+w}{          }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{      }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{      }\PYG{n}{file}\PYG{p}{.}\PYG{n}{close}\PYG{p}{();}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{  }\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{FileToInput}\PYG{p}{(}\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{currentBlock}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{      }\PYG{n}{ifstream}\PYG{+w}{ }\PYG{n}{file}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}2009data/inputs.csv\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{      }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{o}{!}\PYG{n}{file}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{          }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}无法打开文件\PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{          }\PYG{k}{return}\PYG{p}{;}
+\PYG{+w}{      }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{      }\PYG{n}{string}\PYG{+w}{ }\PYG{n}{line}\PYG{p}{;}
+\PYG{+w}{      }\PYG{n}{getline}\PYG{p}{(}\PYG{n}{file}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{line}\PYG{p}{);}
+\PYG{+w}{      }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{transIndex}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{      }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{inputsIndex}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{      }\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{getline}\PYG{p}{(}\PYG{n}{file}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{line}\PYG{p}{))}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{          }\PYG{n}{stringstream}\PYG{+w}{ }\PYG{n}{ss}\PYG{p}{(}\PYG{n}{line}\PYG{p}{);}
+\PYG{+w}{          }\PYG{n}{string}\PYG{+w}{ }\PYG{n}{cell}\PYG{p}{;}
+\PYG{+w}{          }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{column}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{          }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{inputHeight}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{          }\PYG{n}{string}\PYG{+w}{ }\PYG{n}{input\PYGZus{}txid}\PYG{p}{;}
+\PYG{+w}{          }\PYG{n}{input}\PYG{+w}{ }\PYG{n}{currentInput}\PYG{p}{;}
+\PYG{+w}{          }\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{getline}\PYG{p}{(}\PYG{n}{ss}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{cell}\PYG{p}{,}\PYG{+w}{ }\PYG{l+s+sc}{\PYGZsq{},\PYGZsq{}}\PYG{p}{))}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{c+c1}{//扫描一行的数据，以逗号为分隔符}
+\PYG{+w}{              }\PYG{k}{switch}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{column}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                  }\PYG{k}{case}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{o}{:}
+\PYG{+w}{                      }\PYG{n}{inputHeight}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{stoull}\PYG{p}{(}\PYG{n}{cell}\PYG{p}{);}
+\PYG{+w}{                      }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{k}{case}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{o}{:}
+\PYG{+w}{                      }\PYG{n}{input\PYGZus{}txid}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cell}\PYG{p}{;}
+\PYG{+w}{                      }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{k}{case}\PYG{+w}{ }\PYG{l+m+mi}{2}\PYG{o}{:}
+\PYG{+w}{                      }\PYG{n}{currentInput}\PYG{p}{.}\PYG{n}{pre\PYGZus{}block}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{stoi}\PYG{p}{(}\PYG{n}{cell}\PYG{p}{);}
+\PYG{+w}{                      }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{k}{case}\PYG{+w}{ }\PYG{l+m+mi}{3}\PYG{o}{:}
+\PYG{+w}{                      }\PYG{n}{currentInput}\PYG{p}{.}\PYG{n}{prevTxID}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cell}\PYG{p}{;}
+\PYG{+w}{                      }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{k}{case}\PYG{+w}{ }\PYG{l+m+mi}{4}\PYG{o}{:}
+\PYG{+w}{                      }\PYG{n}{currentInput}\PYG{p}{.}\PYG{n}{prevTxOutIndex}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{stoull}\PYG{p}{(}\PYG{n}{cell}\PYG{p}{);}
+\PYG{+w}{                      }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{k}{case}\PYG{+w}{ }\PYG{l+m+mi}{5}\PYG{o}{:}
+\PYG{+w}{                      }\PYG{n}{currentInput}\PYG{p}{.}\PYG{n}{scriptSig}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cell}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{k}{default}\PYG{o}{:}
+\PYG{+w}{                      }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{              }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{              }\PYG{n}{column}\PYG{o}{++}\PYG{p}{;}
+\PYG{+w}{          }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{          }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{inputHeight}\PYG{+w}{ }\PYG{o}{==}\PYG{+w}{ }\PYG{n}{currentBlock}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{height}\PYG{+w}{ }\PYG{o}{\PYGZam{}\PYGZam{}}\PYG{+w}{ }\PYG{n}{input\PYGZus{}txid}\PYG{+w}{ }\PYG{o}{==}\PYG{+w}{ }\PYG{n}{currentBlock}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{transIndex}\PYG{p}{].}\PYG{n}{txid}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{              }\PYG{n}{currentBlock}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{transIndex}\PYG{p}{].}\PYG{n}{inputs}\PYG{p}{[}\PYG{n}{inputsIndex}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{currentInput}\PYG{p}{;}
+\PYG{+w}{              }\PYG{n}{inputsIndex}\PYG{o}{++}\PYG{p}{;}
+\PYG{+w}{          }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{          }\PYG{k}{else}\PYG{p}{\PYGZob{}}
+\PYG{+w}{              }\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{currentBlock}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{height}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{n}{inputHeight}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{                  }\PYG{n}{currentBlock}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{currentBlock}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{next}\PYG{p}{;}
+\PYG{+w}{              }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{              }\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{currentBlock}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{transIndex}\PYG{p}{].}\PYG{n}{txid}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{n}{input\PYGZus{}txid}\PYG{+w}{ }\PYG{o}{\PYGZam{}\PYGZam{}}\PYG{+w}{ }\PYG{n}{currentBlock}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{transIndex}\PYG{p}{].}\PYG{n}{txid}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}\PYGZdq{}}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{                  }\PYG{n}{transIndex}\PYG{o}{++}\PYG{p}{;}
+\PYG{+w}{              }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{              }\PYG{n}{inputsIndex}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{              }\PYG{n}{currentBlock}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{transIndex}\PYG{p}{].}\PYG{n}{inputs}\PYG{p}{[}\PYG{n}{inputsIndex}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{currentInput}\PYG{p}{;}
+\PYG{+w}{              }\PYG{n}{inputsIndex}\PYG{o}{++}\PYG{p}{;}
+\PYG{+w}{          }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{      }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{      }\PYG{n}{file}\PYG{p}{.}\PYG{n}{close}\PYG{p}{();}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{  }\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{FileToOutput}\PYG{p}{(}\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{currentBlock}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{      }\PYG{n}{ifstream}\PYG{+w}{ }\PYG{n}{file}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}2009data/outputs.csv\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{      }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{o}{!}\PYG{n}{file}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{          }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}无法打开文件\PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{          }\PYG{k}{return}\PYG{p}{;}
+\PYG{+w}{      }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{      }\PYG{n}{string}\PYG{+w}{ }\PYG{n}{line}\PYG{p}{;}
+\PYG{+w}{      }\PYG{n}{getline}\PYG{p}{(}\PYG{n}{file}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{line}\PYG{p}{);}
+\PYG{+w}{      }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{transIndex}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{      }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{outputsIndex}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{      }\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{getline}\PYG{p}{(}\PYG{n}{file}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{line}\PYG{p}{))}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{          }\PYG{n}{stringstream}\PYG{+w}{ }\PYG{n}{ss}\PYG{p}{(}\PYG{n}{line}\PYG{p}{);}
+\PYG{+w}{          }\PYG{n}{string}\PYG{+w}{ }\PYG{n}{cell}\PYG{p}{;}
+\PYG{+w}{          }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{column}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{          }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{outputHeight}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{          }\PYG{n}{string}\PYG{+w}{ }\PYG{n}{output\PYGZus{}txid}\PYG{p}{;}
+\PYG{+w}{          }\PYG{n}{output}\PYG{+w}{ }\PYG{n}{currentOutput}\PYG{p}{;}
+\PYG{+w}{          }\PYG{n}{currentOutput}\PYG{p}{.}\PYG{n}{IsUse}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{NotUsed}\PYG{p}{;}
+\PYG{+w}{          }\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{getline}\PYG{p}{(}\PYG{n}{ss}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{cell}\PYG{p}{,}\PYG{+w}{ }\PYG{l+s+sc}{\PYGZsq{},\PYGZsq{}}\PYG{p}{))}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{c+c1}{//扫描一行的数据，以逗号为分隔符}
+\PYG{+w}{              }\PYG{k}{switch}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{column}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                  }\PYG{k}{case}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{o}{:}
+\PYG{+w}{                      }\PYG{n}{outputHeight}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{stoull}\PYG{p}{(}\PYG{n}{cell}\PYG{p}{);}
+\PYG{+w}{                      }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{k}{case}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{o}{:}
+\PYG{+w}{                      }\PYG{n}{currentOutput}\PYG{p}{.}\PYG{n}{txid}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cell}\PYG{p}{;}
+\PYG{+w}{                      }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{k}{case}\PYG{+w}{ }\PYG{l+m+mi}{2}\PYG{o}{:}
+\PYG{+w}{                      }\PYG{n}{currentOutput}\PYG{p}{.}\PYG{n}{index}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{stoi}\PYG{p}{(}\PYG{n}{cell}\PYG{p}{);}
+\PYG{+w}{                      }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{k}{case}\PYG{+w}{ }\PYG{l+m+mi}{3}\PYG{o}{:}
+\PYG{+w}{                      }\PYG{n}{currentOutput}\PYG{p}{.}\PYG{n}{value}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{stoull}\PYG{p}{(}\PYG{n}{cell}\PYG{p}{);}
+\PYG{+w}{                      }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{k}{case}\PYG{+w}{ }\PYG{l+m+mi}{4}\PYG{o}{:}
+\PYG{+w}{                      }\PYG{n}{currentOutput}\PYG{p}{.}\PYG{n}{script}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cell}\PYG{p}{;}
+\PYG{+w}{                      }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{k}{default}\PYG{o}{:}
+\PYG{+w}{                      }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{              }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{              }\PYG{n}{column}\PYG{o}{++}\PYG{p}{;}
+\PYG{+w}{          }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{          }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{outputHeight}\PYG{+w}{ }\PYG{o}{==}\PYG{+w}{ }\PYG{n}{currentBlock}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{height}\PYG{+w}{ }\PYG{o}{\PYGZam{}\PYGZam{}}\PYG{+w}{ }\PYG{n}{currentOutput}\PYG{p}{.}\PYG{n}{txid}\PYG{+w}{ }\PYG{o}{==}\PYG{+w}{ }\PYG{n}{currentBlock}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{transIndex}\PYG{p}{].}\PYG{n}{txid}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{              }\PYG{n}{currentBlock}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{transIndex}\PYG{p}{].}\PYG{n}{outputs}\PYG{p}{[}\PYG{n}{outputsIndex}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{currentOutput}\PYG{p}{;}
+\PYG{+w}{              }\PYG{n}{outputsIndex}\PYG{o}{++}\PYG{p}{;}
+\PYG{+w}{          }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{          }\PYG{k}{else}\PYG{p}{\PYGZob{}}
+\PYG{+w}{              }\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{currentBlock}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{height}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{n}{outputHeight}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{                  }\PYG{n}{currentBlock}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{currentBlock}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{next}\PYG{p}{;}
+\PYG{+w}{              }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{              }\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{currentBlock}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{transIndex}\PYG{p}{].}\PYG{n}{txid}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{n}{currentOutput}\PYG{p}{.}\PYG{n}{txid}\PYG{+w}{ }\PYG{o}{\PYGZam{}\PYGZam{}}\PYG{+w}{ }\PYG{n}{currentBlock}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{transIndex}\PYG{p}{].}\PYG{n}{txid}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}\PYGZdq{}}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{                  }\PYG{n}{transIndex}\PYG{o}{++}\PYG{p}{;}
+\PYG{+w}{              }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{              }\PYG{n}{outputsIndex}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{              }\PYG{n}{currentBlock}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{transIndex}\PYG{p}{].}\PYG{n}{outputs}\PYG{p}{[}\PYG{n}{outputsIndex}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{currentOutput}\PYG{p}{;}
+\PYG{+w}{              }\PYG{n}{outputsIndex}\PYG{o}{++}\PYG{p}{;}
+\PYG{+w}{          }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{      }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{      }\PYG{n}{file}\PYG{p}{.}\PYG{n}{close}\PYG{p}{();}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{  }\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{BlockInfo}\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{height}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{firstblock}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{      }\PYG{c+c1}{//输入区块高度，输出该区块内容}
+\PYG{+w}{      }\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{p}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{firstblock}\PYG{p}{;}
+\PYG{+w}{      }\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{height}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{height}\PYG{+w}{ }\PYG{o}{\PYGZam{}\PYGZam{}}\PYG{+w}{ }\PYG{n}{p}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{k}{nullptr}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{          }\PYG{n}{p}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{next}\PYG{p}{;}
+\PYG{+w}{      }\PYG{p}{\PYGZcb{}}\PYG{c+c1}{//找到height值对应的block}
+\PYG{+w}{      }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}Block Height: \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{height}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{      }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}Block Hash: \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{hash}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{      }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}Block prevHash: \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{prevHash}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{      }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}Block merkleRoot: \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{merkleRoot}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{      }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}Block nonce: \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{nonce}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{      }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{      }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{      }\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{i}\PYG{p}{].}\PYG{n}{txid}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}\PYGZdq{}}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{          }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}Block Transaction \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} txid: \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]).}\PYG{n}{txid}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{          }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}Block Transaction \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} input count: \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]).}\PYG{n}{input\PYGZus{}count}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{          }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}Block Transaction \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} output count: \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]).}\PYG{n}{output\PYGZus{}count}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{          }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}Block Transaction \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} Coinbase: \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]).}\PYG{n}{is\PYGZus{}coinbase}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{          }\PYG{n}{TransactionInfo}\PYG{p}{(}\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{i}\PYG{p}{].}\PYG{n}{txid}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{firstblock}\PYG{p}{,}\PYG{+w}{ }\PYG{k}{nullptr}\PYG{p}{);}
+\PYG{+w}{          }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{          }\PYG{n}{i}\PYG{o}{++}\PYG{p}{;}
+\PYG{+w}{      }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{      }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{  }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n+nf}{BlocksLength}\PYG{p}{(}\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{firstblock}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{      }\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{p}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{firstblock}\PYG{p}{;}
+\PYG{+w}{      }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{len}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{      }\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{p}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{k}{nullptr}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{          }\PYG{n}{len}\PYG{o}{++}\PYG{p}{;}
+\PYG{+w}{          }\PYG{n}{p}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{next}\PYG{p}{;}
+\PYG{+w}{      }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{      }\PYG{k}{return}\PYG{+w}{ }\PYG{n}{len}\PYG{p}{;}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{  }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n+nf}{TransactionInfo}\PYG{p}{(}\PYG{n}{string}\PYG{+w}{ }\PYG{n}{My\PYGZus{}txid}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{firstblock}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{endblock}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{      }\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{p}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{firstblock}\PYG{p}{;}
+\PYG{+w}{      }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{find}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{c+c1}{//找到交易信息则find = 1, 否则find = 0}
+\PYG{+w}{      }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{      }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{      }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{k}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{      }\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{p}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{n}{endblock}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{          }\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{i}\PYG{p}{].}\PYG{n}{txid}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}\PYGZdq{}}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{              }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{i}\PYG{p}{].}\PYG{n}{txid}\PYG{+w}{ }\PYG{o}{==}\PYG{+w}{ }\PYG{n}{My\PYGZus{}txid}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{                  }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}Transaction \PYGZdq{}}\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{l+s}{\PYGZdq{} in Block: \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{height}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}Transaction \PYGZdq{}}\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{l+s}{\PYGZdq{} input count: \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]).}\PYG{n}{input\PYGZus{}count}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}Transaction \PYGZdq{}}\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{l+s}{\PYGZdq{} output count: \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]).}\PYG{n}{output\PYGZus{}count}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}Transaction \PYGZdq{}}\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{l+s}{\PYGZdq{} Coinbase: \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]).}\PYG{n}{is\PYGZus{}coinbase}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{i}\PYG{p}{].}\PYG{n}{inputs}\PYG{p}{[}\PYG{n}{j}\PYG{p}{].}\PYG{n}{scriptSig}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}\PYGZdq{}}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{                      }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}Transaction \PYGZdq{}}\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{l+s}{\PYGZdq{} input \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} pre\PYGZus{}block: \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]).}\PYG{n}{inputs}\PYG{p}{[}\PYG{n}{j}\PYG{p}{].}\PYG{n}{pre\PYGZus{}block}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{                      }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}Transaction \PYGZdq{}}\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{l+s}{\PYGZdq{} input \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} prevTxID: \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]).}\PYG{n}{inputs}\PYG{p}{[}\PYG{n}{j}\PYG{p}{].}\PYG{n}{prevTxID}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{                      }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}Transaction \PYGZdq{}}\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{l+s}{\PYGZdq{} input \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} prevTxOutIndex: \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]).}\PYG{n}{inputs}\PYG{p}{[}\PYG{n}{j}\PYG{p}{].}\PYG{n}{prevTxOutIndex}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{                      }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}Transaction \PYGZdq{}}\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{l+s}{\PYGZdq{} input \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} scriptSig: \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]).}\PYG{n}{inputs}\PYG{p}{[}\PYG{n}{j}\PYG{p}{].}\PYG{n}{scriptSig}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{                      }\PYG{n}{j}\PYG{o}{++}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{                  }\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{i}\PYG{p}{].}\PYG{n}{outputs}\PYG{p}{[}\PYG{n}{k}\PYG{p}{].}\PYG{n}{script}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}\PYGZdq{}}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{                      }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}Transaction \PYGZdq{}}\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} output \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{k}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} txid: \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]).}\PYG{n}{outputs}\PYG{p}{[}\PYG{n}{k}\PYG{p}{].}\PYG{n}{txid}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{                      }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}Transaction \PYGZdq{}}\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} output \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{k}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} index: \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]).}\PYG{n}{outputs}\PYG{p}{[}\PYG{n}{k}\PYG{p}{].}\PYG{n}{index}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{                      }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}Transaction \PYGZdq{}}\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} output \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{k}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} value: \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]).}\PYG{n}{outputs}\PYG{p}{[}\PYG{n}{k}\PYG{p}{].}\PYG{n}{value}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{                      }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}Transaction \PYGZdq{}}\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} output \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{k}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} script: \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]).}\PYG{n}{outputs}\PYG{p}{[}\PYG{n}{k}\PYG{p}{].}\PYG{n}{script}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{                      }\PYG{n}{k}\PYG{o}{++}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{                  }\PYG{n}{find}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{p}{;}\PYG{c+c1}{//找到这条交易记录}
+\PYG{+w}{                  }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{              }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{              }\PYG{n}{i}\PYG{o}{++}\PYG{p}{;}
+\PYG{+w}{          }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{          }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{find}\PYG{+w}{ }\PYG{o}{==}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{p}{)}\PYG{+w}{ }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{          }\PYG{k}{else}\PYG{p}{\PYGZob{}}
+\PYG{+w}{              }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{              }\PYG{n}{p}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{next}\PYG{p}{;}
+\PYG{+w}{          }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{      }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{      }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{find}\PYG{+w}{ }\PYG{o}{==}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{p}{)}\PYG{+w}{ }\PYG{k}{return}\PYG{+w}{ }\PYG{n}{find}\PYG{p}{;}
+\PYG{+w}{      }\PYG{k}{else}\PYG{p}{\PYGZob{}}
+\PYG{+w}{          }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}Transaction Not Found!\PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{          }\PYG{k}{return}\PYG{+w}{ }\PYG{n}{find}\PYG{p}{;}
+\PYG{+w}{      }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{  }\PYG{n}{block}\PYG{o}{*}\PYG{+w}{ }\PYG{n+nf}{InitBlockChain}\PYG{p}{()\PYGZob{}}
+\PYG{+w}{      }\PYG{n}{block}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{firstBlock}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{FileToBlock}\PYG{p}{();}
+\PYG{+w}{      }\PYG{n}{FileToTransaction}\PYG{p}{(}\PYG{n}{firstBlock}\PYG{p}{);}
+\PYG{+w}{      }\PYG{n}{FileToInput}\PYG{p}{(}\PYG{n}{firstBlock}\PYG{p}{);}
+\PYG{+w}{      }\PYG{n}{FileToOutput}\PYG{p}{(}\PYG{n}{firstBlock}\PYG{p}{);}
+\PYG{+w}{      }\PYG{k}{return}\PYG{+w}{ }\PYG{n}{firstBlock}\PYG{p}{;}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{  }\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{CheckValidTransaction}\PYG{p}{(}\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{firstblock}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{      }\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{p}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{firstblock}\PYG{p}{;}
+\PYG{+w}{      }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+
+\PYG{+w}{      }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{valid}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{      }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{invalid}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{      }\PYG{c+c1}{//规则1:每个input所使用的output能够找到。}
+\PYG{+w}{      }\PYG{c+c1}{//规则2:每个input所使用的output没有被之前的交易用过。}
+\PYG{+w}{      }\PYG{c+c1}{//规则3:该交易所有input所引用的output的价值（value）之和大于等于该交易所有output的价值（value）之和。}
+
+\PYG{+w}{      }\PYG{c+c1}{//a、有一类特殊交易，其is\PYGZus{}coinbase字段为true，该类交易的特点是没有input，只有output。该类交易是合法的，其中的output可能被后续的transaction所引用。}
+\PYG{+w}{      }\PYG{c+c1}{//b、每一个output只能被使用一次，即便还有剩余的value没有被使用。}
+\PYG{+w}{      }\PYG{c+c1}{//c、如果某个交易是非法的，那么引用了该交易作为input的交易也同样是非法的（非法交易不会被包括在区块内，如果使用了则相当于违反了规则a）。}
+\PYG{+w}{      }\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{p}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{k}{nullptr}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{          }\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{i}\PYG{p}{].}\PYG{n}{txid}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}\PYGZdq{}}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{              }\PYG{c+c1}{//规则1：其is\PYGZus{}coinbase字段为true，该类交易的特点是没有input，只有output。该类交易是合法的，其中的output可能被后续的transaction所引用。}
+\PYG{+w}{              }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{i}\PYG{p}{].}\PYG{n}{is\PYGZus{}coinbase}\PYG{+w}{ }\PYG{o}{==}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{                  }\PYG{n}{valid}\PYG{o}{++}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{n}{i}\PYG{o}{++}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{k}{continue}\PYG{p}{;}
+\PYG{+w}{              }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{              }\PYG{c+c1}{//规则2:如果每个input所使用的output找不到，交易不合法；}
+\PYG{+w}{              }\PYG{c+c1}{//规则3:每个input所使用的output被之前的交易用过，交易不合法}
+\PYG{+w}{              }\PYG{c+c1}{//规则4:如果引用的output来自不合法的交易，交易不合法}
+\PYG{+w}{              }\PYG{c+c1}{//规则5:所引用的output的value之和\PYGZlt{}该所有output的value之和，交易不合法}
+\PYG{+w}{              }\PYG{k}{else}\PYG{+w}{ }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{IOCheck}\PYG{p}{(}\PYG{n}{firstblock}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{p}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{i}\PYG{p}{])}\PYG{+w}{ }\PYG{o}{==}\PYG{+w}{ }\PYG{n+nb}{false}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{                  }\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{i}\PYG{p}{].}\PYG{n}{valid}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{no}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{n}{invalid}\PYG{o}{++}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{n}{i}\PYG{o}{++}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{k}{continue}\PYG{p}{;}
+\PYG{+w}{              }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{              }\PYG{k}{else}\PYG{p}{\PYGZob{}}\PYG{c+c1}{//}
+\PYG{+w}{                  }\PYG{n}{valid}\PYG{o}{++}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{n}{i}\PYG{o}{++}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{k}{continue}\PYG{p}{;}
+\PYG{+w}{              }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{          }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{          }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{          }\PYG{n}{p}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{next}\PYG{p}{;}
+\PYG{+w}{      }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{      }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}不合法交易数: \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{invalid}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{      }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}合法交易数: \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{valid}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{  }\PYG{k+kt}{bool}\PYG{+w}{ }\PYG{n+nf}{IOCheck}\PYG{p}{(}\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{firstblock}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{currentblock}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{transaction}\PYG{+w}{ }\PYG{n}{t}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{      }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{      }\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{t}\PYG{p}{.}\PYG{n}{inputs}\PYG{p}{[}\PYG{n}{i}\PYG{p}{].}\PYG{n}{scriptSig}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}\PYGZdq{}}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{          }\PYG{n}{transaction}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{PrevOutput}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{FindPrevOutput}\PYG{p}{(}\PYG{n}{t}\PYG{p}{.}\PYG{n}{inputs}\PYG{p}{[}\PYG{n}{i}\PYG{p}{].}\PYG{n}{prevTxID}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{firstblock}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{currentblock}\PYG{p}{);}
+\PYG{+w}{          }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{PrevOutput}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{k}{nullptr}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{              }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{PrevOutput}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{outputs}\PYG{p}{[}\PYG{n}{t}\PYG{p}{.}\PYG{n}{inputs}\PYG{p}{[}\PYG{n}{i}\PYG{p}{].}\PYG{n}{prevTxOutIndex}\PYG{p}{].}\PYG{n}{IsUse}\PYG{+w}{ }\PYG{o}{==}\PYG{+w}{ }\PYG{n}{NotUsed}\PYG{+w}{ }\PYG{o}{\PYGZam{}\PYGZam{}}
+\PYG{+w}{                  }\PYG{n}{PrevOutput}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{valid}\PYG{+w}{ }\PYG{o}{==}\PYG{+w}{ }\PYG{n}{yes}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{                  }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{sum\PYGZus{}in}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{sum\PYGZus{}out}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{t}\PYG{p}{.}\PYG{n}{input\PYGZus{}count}\PYG{+w}{ }\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{o}{++}\PYG{p}{)}\PYG{+w}{ }\PYG{n}{sum\PYGZus{}in}\PYG{+w}{ }\PYG{o}{+=}\PYG{+w}{ }\PYG{n}{PrevOutput}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{outputs}\PYG{p}{[}\PYG{n}{t}\PYG{p}{.}\PYG{n}{inputs}\PYG{p}{[}\PYG{n}{j}\PYG{p}{].}\PYG{n}{prevTxOutIndex}\PYG{p}{].}\PYG{n}{value}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{t}\PYG{p}{.}\PYG{n}{output\PYGZus{}count}\PYG{+w}{ }\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{o}{++}\PYG{p}{)}\PYG{+w}{ }\PYG{n}{sum\PYGZus{}out}\PYG{+w}{ }\PYG{o}{+=}\PYG{+w}{ }\PYG{n}{t}\PYG{p}{.}\PYG{n}{outputs}\PYG{p}{[}\PYG{n}{j}\PYG{p}{].}\PYG{n}{value}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{sum\PYGZus{}in}\PYG{+w}{ }\PYG{o}{\PYGZgt{}=}\PYG{+w}{ }\PYG{n}{sum\PYGZus{}out}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{                      }\PYG{n}{PrevOutput}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{outputs}\PYG{p}{[}\PYG{n}{t}\PYG{p}{.}\PYG{n}{inputs}\PYG{p}{[}\PYG{n}{i}\PYG{p}{].}\PYG{n}{prevTxOutIndex}\PYG{p}{].}\PYG{n}{IsUse}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Used}\PYG{p}{;}
+\PYG{+w}{                      }\PYG{k}{return}\PYG{+w}{ }\PYG{n+nb}{true}\PYG{p}{;}
+\PYG{+w}{                  }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{                  }\PYG{k}{else}\PYG{+w}{ }\PYG{k}{return}\PYG{+w}{ }\PYG{n+nb}{false}\PYG{p}{;}
+\PYG{+w}{              }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{          }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{          }\PYG{n}{i}\PYG{o}{++}\PYG{p}{;}
+\PYG{+w}{      }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{      }\PYG{k}{return}\PYG{+w}{ }\PYG{n+nb}{false}\PYG{p}{;}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{  }\PYG{n}{transaction}\PYG{o}{*}\PYG{+w}{ }\PYG{n+nf}{FindPrevOutput}\PYG{p}{(}\PYG{n}{string}\PYG{+w}{ }\PYG{n}{My\PYGZus{}txid}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{firstblock}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{endblock}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{      }\PYG{c+c1}{//根据PrevTxid找到当前input所用的output的Txid，再根据当前prevTxOutIndex找到所用的output}
+\PYG{+w}{      }\PYG{n}{block}\PYG{+w}{ }\PYG{o}{*}\PYG{n}{p}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{firstblock}\PYG{p}{;}
+\PYG{+w}{      }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{      }\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{p}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{n}{endblock}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{          }\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{i}\PYG{p}{].}\PYG{n}{txid}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}\PYGZdq{}}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{              }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{i}\PYG{p}{].}\PYG{n}{txid}\PYG{+w}{ }\PYG{o}{==}\PYG{+w}{ }\PYG{n}{My\PYGZus{}txid}\PYG{p}{)}\PYG{+w}{ }\PYG{k}{return}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{transactions}\PYG{p}{[}\PYG{n}{i}\PYG{p}{];}
+\PYG{+w}{              }\PYG{k}{else}\PYG{+w}{ }\PYG{n}{i}\PYG{o}{++}\PYG{p}{;}
+\PYG{+w}{          }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{          }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{          }\PYG{n}{p}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{p}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{next}\PYG{p}{;}
+\PYG{+w}{      }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{      }\PYG{k}{return}\PYG{+w}{ }\PYG{k}{nullptr}\PYG{p}{;}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{  }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n+nf}{main}\PYG{p}{()\PYGZob{}}
+\PYG{+w}{      }\PYG{k+kt}{clock\PYGZus{}t}\PYG{+w}{ }\PYG{n}{startTime}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{clock}\PYG{p}{();}\PYG{c+c1}{//计时开始}
+\PYG{+w}{      }\PYG{n}{block}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{firstBlock}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{InitBlockChain}\PYG{p}{();}
+\PYG{+w}{      }\PYG{k+kt}{clock\PYGZus{}t}\PYG{+w}{ }\PYG{n}{endTime}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{clock}\PYG{p}{();}\PYG{c+c1}{//计时结束}
+\PYG{+w}{      }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}Time spent reading data: \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{p}{(}\PYG{k+kt}{double}\PYG{p}{)(}\PYG{n}{endTime}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{n}{startTime}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{/}\PYG{+w}{ }\PYG{n}{CLOCKS\PYGZus{}PER\PYGZus{}SEC}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}s\PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+
+\PYG{+w}{      }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}Block count: \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{BlocksLength}\PYG{p}{(}\PYG{n}{firstBlock}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{      }\PYG{n}{CheckValidTransaction}\PYG{p}{(}\PYG{n}{firstBlock}\PYG{p}{);}
+\PYG{+w}{      }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{      }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{height}\PYG{p}{;}
+\PYG{+w}{      }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}Please input block\PYGZsq{}s height: \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{      }\PYG{n}{cin}\PYG{+w}{ }\PYG{o}{\PYGZgt{}\PYGZgt{}}\PYG{+w}{ }\PYG{n}{height}\PYG{p}{;}
+\PYG{+w}{      }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{      }\PYG{n}{BlockInfo}\PYG{p}{(}\PYG{n}{height}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{firstBlock}\PYG{p}{);}
+
+\PYG{+w}{      }\PYG{n}{string}\PYG{+w}{ }\PYG{n}{txid}\PYG{p}{;}
+\PYG{+w}{      }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}Please input transaction\PYGZsq{}s txid: \PYGZdq{}}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{      }\PYG{n}{cin}\PYG{+w}{ }\PYG{o}{\PYGZgt{}\PYGZgt{}}\PYG{+w}{ }\PYG{n}{txid}\PYG{p}{;}
+\PYG{+w}{      }\PYG{n}{cout}\PYG{+w}{ }\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{+w}{ }\PYG{n}{endl}\PYG{p}{;}
+\PYG{+w}{      }\PYG{n}{TransactionInfo}\PYG{p}{(}\PYG{n}{txid}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{firstBlock}\PYG{p}{,}\PYG{+w}{ }\PYG{k}{nullptr}\PYG{p}{);}
+
+\PYG{+w}{      }\PYG{k}{return}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{}}
+\end{Verbatim}
