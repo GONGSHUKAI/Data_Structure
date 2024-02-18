@@ -2,13 +2,13 @@
 
 In this subtask, a primitive Block Chain system is established. The program is capable of reading transaction datasets and organizing transactions into linked lists. The system can spot invalid transactions.
 
-**Keywords: I/O stream, Organize transactions into Linked-Lists, Spotting invalid transactions. **
+**Keywords: I/O stream, Organize transactions into Linked-Lists, Spotting invalid transactions.**
 
 ### Oct.13_Lab: Stack-based smart contracts.
 
 In this subtask, the Block Chain system spots invalid transactions through RSA encryption examination, forming stack-based smart contracts.
 
-**Keywords: RSA encryption, Signature, Stack-based smart contracts. **
+**Keywords: RSA encryption, Signature, Stack-based smart contracts.**
 
 ### Oct.27_Lab: Interactive Block Chain System
 
